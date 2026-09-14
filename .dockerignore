@@ -1,0 +1,10 @@
+venv
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+.git
+.gitignore
+test_backend.py
