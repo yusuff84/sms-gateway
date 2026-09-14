@@ -1,0 +1,178 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block content %}
+<div class="container-xl py-4">
+
+  <!-- Header Section -->
+  <div class="page-header d-print-none mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <div class="page-pretitle text-muted text-uppercase fw-semibold" style="letter-spacing: 0.05em; font-size: 0.75rem;">
+          Мониторинг безопасности
+        </div>
+        <h2 class="page-title mt-1">
+          <i class="fa-solid fa-user-shield text-danger me-2"></i> Анализ абузеров и повторных запросов
+        </h2>
+        <div class="text-muted mt-1">
+          Автоматический подсчет и выявление номеров с подозрительно частыми запросами кодов за последние 7 дней.
+        </div>
+      </div>
+      <div class="col-auto ms-auto d-print-none">
+        <a href="{{ url_for('admin:list', identity='blacklisted-phone') }}" class="btn btn-outline-danger">
+          <i class="fa-solid fa-ban me-2"></i> Черный список
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+      <div class="row g-3 align-items-center">
+        <!-- Filter Tabs -->
+        <div class="col-md-7">
+          <div class="nav nav-pills">
+            <a href="?filter=abusers{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'abusers' %}active{% endif %}">
+              <i class="fa-solid fa-triangle-exclamation me-1"></i> Повторные запросы (2+)
+            </a>
+            <a href="?filter=critical{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'critical' %}active{% endif %}">
+              <i class="fa-solid fa-fire text-danger me-1"></i> Критический абуз (8+)
+            </a>
+            <a href="?filter=blocked{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'blocked' %}active{% endif %}">
+              <i class="fa-solid fa-ban me-1"></i> Заблокированные
+            </a>
+            <a href="?filter=all{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'all' %}active{% endif %}">
+              Все номера
+            </a>
+          </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="col-md-5">
+          <form method="GET" action="/admin/abusers" class="input-icon">
+            <input type="hidden" name="filter" value="{{ filter_mode }}">
+            <span class="input-icon-addon">
+              <i class="fa-solid fa-magnifying-glass text-muted"></i>
+            </span>
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Поиск по номеру телефона...">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abusers Table -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h3 class="card-title mb-0">
+        Найдено номеров: <span class="badge bg-primary text-white ms-1">{{ total_count }}</span>
+      </h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-vcenter card-table">
+        <thead>
+          <tr>
+            <th>Номер телефона</th>
+            <th class="text-center">За 7 дней</th>
+            <th class="text-center">За 24 часа</th>
+            <th class="text-center">Всего за все время</th>
+            <th>Последний запрос</th>
+            <th>Уровень риска</th>
+            <th>Статус</th>
+            <th class="text-end">Действие</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if items %}
+            {% for item in items %}
+            <tr>
+              <td>
+                <span class="fw-bold text-dark fs-3">{{ item.phone_number }}</span>
+              </td>
+              <td class="text-center">
+                {% if item.count_7d >= 8 %}
+                  <span class="badge bg-danger text-white fs-4 px-3 py-1">{{ item.count_7d }}</span>
+                {% elif item.count_7d >= 4 %}
+                  <span class="badge bg-warning text-dark fs-4 px-3 py-1">{{ item.count_7d }}</span>
+                {% elif item.count_7d >= 2 %}
+                  <span class="badge bg-blue-lt fs-4 px-3 py-1">{{ item.count_7d }}</span>
+                {% else %}
+                  <span class="badge bg-secondary-lt fs-4 px-3 py-1">{{ item.count_7d }}</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if item.count_24h > 0 %}
+                  <span class="badge bg-purple-lt fs-4 px-2 py-1">{{ item.count_24h }}</span>
+                {% else %}
+                  <span class="text-muted small">0</span>
+                {% endif %}
+              </td>
+              <td class="text-center text-muted fw-semibold">
+                {{ item.count_total }}
+              </td>
+              <td class="text-muted">
+                {{ item.last_seen.strftime('%d.%m.%Y %H:%M') if item.last_seen else '—' }}
+              </td>
+              <td>
+                {% if item.risk == 'critical' %}
+                  <span class="badge bg-danger text-white">🚨 Критический</span>
+                {% elif item.risk == 'suspicious' %}
+                  <span class="badge bg-warning text-dark">⚠️ Подозрительный</span>
+                {% elif item.risk == 'repeat' %}
+                  <span class="badge bg-info-lt">🟡 Повторный</span>
+                {% else %}
+                  <span class="badge bg-success-lt">🟢 Норма</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if item.is_blocked %}
+                  <span class="badge bg-danger-lt d-inline-flex align-items-center">
+                    <i class="fa-solid fa-lock me-1"></i> Заблокирован
+                  </span>
+                  {% if item.block_reason %}
+                    <div class="text-muted small text-truncate mt-1" style="max-width: 160px;" title="{{ item.block_reason }}">
+                      {{ item.block_reason }}
+                    </div>
+                  {% endif %}
+                {% else %}
+                  <span class="badge bg-success-lt d-inline-flex align-items-center">
+                    <i class="fa-solid fa-circle-check me-1"></i> Активен
+                  </span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                {% if item.is_blocked %}
+                  <form method="POST" action="/admin/abusers/unblock" class="d-inline">
+                    <input type="hidden" name="phone_number" value="{{ item.phone_number }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                      <i class="fa-solid fa-unlock me-1"></i> Разблок.
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="/admin/abusers/block" class="d-inline">
+                    <input type="hidden" name="phone_number" value="{{ item.phone_number }}">
+                    <input type="hidden" name="reason" value="Частые повторные запросы кодов за 7 дней ({{ item.count_7d }} раз)">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                      <i class="fa-solid fa-ban me-1"></i> Заблокировать
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-5">
+                <i class="fa-solid fa-shield-halved text-success fs-1 mb-3 d-block"></i>
+                <div class="h3 fw-bold">Абузеров не обнаружено</div>
+                <div class="text-muted">По заданным критериям фильтра все номера имеют нормальную частоту запросов.</div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

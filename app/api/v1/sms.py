@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.api_key import ApiKey
 from app.models.sms_task import SmsTask, SmsStatus
 from app.models.sms_template import SmsTemplate
+from app.models.blacklisted_phone import BlacklistedPhone
 from app.schemas.sms import (
     SmsSendRequest,
     SmsSendResponse,
@@ -124,7 +125,20 @@ async def send_sms(
             detail="SMS-шлюз сейчас недоступен: телефон для отправки SMS не в сети. Попробуйте позже или используйте альтернативный способ."
         )
 
-    # 4. Recipient Anti-Flood Cooldown (protect single SIM from burning quota on the same number)
+    # 4. Blacklist Check: block abusers and fraud numbers
+    bl_stmt = select(BlacklistedPhone).where(
+        BlacklistedPhone.phone_number == cleaned_phone,
+        BlacklistedPhone.is_active == True
+    )
+    bl_res = await db.execute(bl_stmt)
+    blocked_entry = bl_res.scalar_one_or_none()
+    if blocked_entry:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Отправка заблокирована: номер {cleaned_phone} находится в черном списке ({blocked_entry.reason})."
+        )
+
+    # 5. Recipient Anti-Flood Cooldown (protect single SIM from burning quota on the same number)
     if settings.PHONE_NUMBER_COOLDOWN_SECONDS > 0:
         cutoff = datetime.now(timezone.utc) - timedelta(seconds=settings.PHONE_NUMBER_COOLDOWN_SECONDS)
         flood_stmt = select(SmsTask).where(

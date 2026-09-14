@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  {% block head_meta %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  {% endblock %}
+
+  <!-- Google Font: Inter (Modern Web Typography) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  {% block head_css %}
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/tabler.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/tabler-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/fontawesome-all.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/select2.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/flatpickr.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/main.css') }}">
+  {% endblock %}
+
+  {% if admin.favicon_url %}
+  <link rel="icon" href="{{ admin.favicon_url }}">
+  {% endif %}
+  <title>{{ admin.title }}</title>
+
+  {% block head %}
+  {% endblock %}
+
+  {% block head_tail %}
+  <style>
+    :root {
+      --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --tblr-primary: #0b57d0;
+      --tblr-primary-rgb: 11, 87, 208;
+      --tblr-body-bg: #f8fafc;
+      --tblr-border-color: #e2e8f0;
+      --tblr-border-radius: 12px;
+      --tblr-border-radius-lg: 16px;
+    }
+
+    body {
+      font-family: var(--tblr-font-sans-serif);
+      background-color: #f8fafc;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Modern Dark Sidebar */
+    .navbar-vertical {
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+      box-shadow: 4px 0 24px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .navbar-vertical .navbar-brand {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 0.5rem;
+    }
+
+    .navbar-vertical .navbar-brand h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+    }
+
+    .navbar-vertical .nav-link {
+      border-radius: 10px;
+      margin: 2px 8px;
+      padding: 10px 14px;
+      font-weight: 500;
+      color: #94a3b8 !important;
+      transition: all 0.2s ease;
+    }
+
+    .navbar-vertical .nav-link:hover {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateX(3px);
+    }
+
+    .navbar-vertical .nav-item.active .nav-link,
+    .navbar-vertical .nav-link.active {
+      color: #ffffff !important;
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .navbar-vertical .nav-link-icon {
+      margin-right: 10px;
+      opacity: 0.9;
+    }
+
+    /* Modern Elevated Cards */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-header {
+      background: transparent;
+      border-bottom: 1px solid #f1f5f9;
+      padding: 1.25rem 1.5rem;
+      font-weight: 600;
+    }
+
+    /* Modern Tables */
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table thead th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 16px;
+    }
+
+    .table tbody td {
+      padding: 14px 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      font-size: 0.875rem;
+    }
+
+    .table tbody tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    /* Modern Pill Badges */
+    .badge {
+      padding: 5px 10px;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* Form Controls */
+    .form-control, .form-select {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 14px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Buttons */
+    .btn {
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0b57d0 0%, #1d4ed8 100%);
+      border: none;
+      box-shadow: 0 2px 8px rgba(11, 87, 208, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0842a0 0%, #1e40af 100%);
+      box-shadow: 0 4px 14px rgba(11, 87, 208, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Page Titles */
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  </style>
+  {% endblock %}
+</head>
+
+<body>
+  {% block body %}
+  <main>
+    {% block main %}
+    {% endblock %}
+  </main>
+  {% endblock %}
+  {% block tail_js %}
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/jquery.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/tabler.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/select2.full.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/flatpickr.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/main.js') }}"></script>
+  {% endblock %}
+  {% block tail %}
+  {% endblock %}
+
+</body>
+
+</html>

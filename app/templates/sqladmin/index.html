@@ -1,0 +1,274 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block content %}
+<div class="container-xl py-4">
+
+  <!-- Header Section -->
+  <div class="page-header d-print-none mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <div class="page-pretitle text-muted text-uppercase fw-semibold" style="letter-spacing: 0.05em; font-size: 0.75rem;">
+          Центр управления шлюзом
+        </div>
+        <h2 class="page-title mt-1 d-flex align-items-center">
+          Обзор системы и Антифрод
+          {% if online_devices > 0 %}
+            <span class="badge bg-green-lt ms-3 px-3 py-2 d-inline-flex align-items-center" style="font-size: 0.8rem; border-radius: 9999px;">
+              <span class="status-dot status-dot-animated bg-success me-2"></span> GSM Шлюз Активен ({{ online_devices }})
+            </span>
+          {% else %}
+            <span class="badge bg-danger-lt ms-3 px-3 py-2 d-inline-flex align-items-center" style="font-size: 0.8rem; border-radius: 9999px;">
+              <span class="status-dot bg-danger me-2"></span> Шлюз Офлайн
+            </span>
+          {% endif %}
+        </h2>
+      </div>
+      <div class="col-auto ms-auto d-print-none">
+        <div class="btn-list">
+          <a href="/admin/abusers" class="btn btn-outline-danger d-none d-sm-inline-block">
+            <i class="fa-solid fa-user-shield me-2"></i> Проверить абузеров
+          </a>
+          <a href="/docs" target="_blank" class="btn btn-primary d-none d-sm-inline-block">
+            <i class="fa-solid fa-code me-2"></i> Swagger API
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Metric Cards Row -->
+  <div class="row row-deck row-cards mb-4">
+    <!-- Today -->
+    <div class="col-sm-6 col-lg-2">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex align-items-center">
+          <span class="avatar rounded-3 bg-blue-lt text-blue me-3">
+            <i class="fa-solid fa-bolt fs-2"></i>
+          </span>
+          <div>
+            <div class="text-muted small fw-medium">Сегодня</div>
+            <div class="h2 mb-0 fw-bold text-dark">{{ tasks_today }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 Days -->
+    <div class="col-sm-6 col-lg-2">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex align-items-center">
+          <span class="avatar rounded-3 bg-purple-lt text-purple me-3">
+            <i class="fa-solid fa-calendar-week fs-2"></i>
+          </span>
+          <div>
+            <div class="text-muted small fw-medium">За 7 дней</div>
+            <div class="h2 mb-0 fw-bold text-dark">{{ tasks_7d }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Sent -->
+    <div class="col-sm-6 col-lg-2">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex align-items-center">
+          <span class="avatar rounded-3 bg-cyan-lt text-cyan me-3">
+            <i class="fa-solid fa-paper-plane fs-2"></i>
+          </span>
+          <div>
+            <div class="text-muted small fw-medium">Всего сообщений</div>
+            <div class="h2 mb-0 fw-bold text-dark">{{ total_tasks }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Rate -->
+    <div class="col-sm-6 col-lg-2">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex align-items-center">
+          <span class="avatar rounded-3 bg-green-lt text-green me-3">
+            <i class="fa-solid fa-circle-check fs-2"></i>
+          </span>
+          <div>
+            <div class="text-muted small fw-medium">Доставляемость</div>
+            <div class="h2 mb-0 fw-bold text-dark">{{ delivery_rate }}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Devices Online -->
+    <div class="col-sm-6 col-lg-2">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex align-items-center">
+          <span class="avatar rounded-3 bg-teal-lt text-teal me-3">
+            <i class="fa-solid fa-mobile-screen fs-2"></i>
+          </span>
+          <div>
+            <div class="text-muted small fw-medium">Телефонов онлайн</div>
+            <div class="h2 mb-0 fw-bold text-dark">{{ online_devices }} / {{ devices|length }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blocked Numbers -->
+    <div class="col-sm-6 col-lg-2">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex align-items-center">
+          <span class="avatar rounded-3 bg-red-lt text-danger me-3">
+            <i class="fa-solid fa-ban fs-2"></i>
+          </span>
+          <div>
+            <div class="text-muted small fw-medium">В черном списке</div>
+            <div class="h2 mb-0 fw-bold text-danger">{{ blacklisted_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row row-cards">
+    <!-- Abusers Section (Top suspicious numbers in 7 days) -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fa-solid fa-triangle-exclamation text-warning fs-3 me-2"></i>
+            <span class="h3 mb-0">Повторные запросы за 7 дней (Абузеры)</span>
+          </div>
+          <a href="/admin/abusers" class="text-primary small fw-semibold text-decoration-none">
+            Вся аналитика &rarr;
+          </a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-vcenter card-table">
+            <thead>
+              <tr>
+                <th>Номер</th>
+                <th>Запросов (7д)</th>
+                <th>Уровень риска</th>
+                <th>Статус</th>
+                <th class="text-end">Действие</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if top_abusers %}
+                {% for r in top_abusers %}
+                {% set is_blocked = (r.phone_number in blocked_numbers) %}
+                <tr>
+                  <td class="fw-bold text-dark">{{ r.phone_number }}</td>
+                  <td>
+                    <span class="badge bg-primary-lt px-2 py-1 fs-4">{{ r.count_7d }}</span>
+                  </td>
+                  <td>
+                    {% if r.count_7d >= 8 %}
+                      <span class="badge bg-danger text-white">🚨 Критический</span>
+                    {% elif r.count_7d >= 4 %}
+                      <span class="badge bg-warning text-dark">⚠️ Подозрительный</span>
+                    {% else %}
+                      <span class="badge bg-info-lt">ℹ️ Повторный</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if is_blocked %}
+                      <span class="badge bg-danger-lt">🚫 Заблокирован</span>
+                    {% else %}
+                      <span class="badge bg-success-lt">Активен</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if is_blocked %}
+                      <form method="POST" action="/admin/abusers/unblock" class="d-inline">
+                        <input type="hidden" name="phone_number" value="{{ r.phone_number }}">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Разблок.</button>
+                      </form>
+                    {% else %}
+                      <form method="POST" action="/admin/abusers/block" class="d-inline">
+                        <input type="hidden" name="phone_number" value="{{ r.phone_number }}">
+                        <input type="hidden" name="reason" value="Частые запросы кодов за 7 дней ({{ r.count_7d }} раз)">
+                        <button type="submit" class="btn btn-sm btn-danger">Заблокировать</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fa-solid fa-shield-halved text-success fs-1 mb-2 d-block"></i>
+                    Подозрительных повторных запросов за 7 дней не обнаружено.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent SMS Activity -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fa-solid fa-clock-rotate-left text-primary fs-3 me-2"></i>
+            <span class="h3 mb-0">Последние SMS в шлюзе</span>
+          </div>
+          <a href="{{ url_for('admin:list', identity='sms-task') }}" class="text-primary small fw-semibold text-decoration-none">
+            Все сообщения &rarr;
+          </a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-vcenter card-table">
+            <thead>
+              <tr>
+                <th>Номер</th>
+                <th>Сообщение</th>
+                <th>Статус</th>
+                <th>Время</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_tasks %}
+                {% for t in recent_tasks %}
+                <tr>
+                  <td class="fw-semibold">{{ t.phone_number }}</td>
+                  <td class="text-muted text-truncate" style="max-width: 200px;">
+                    {{ t.message }}
+                  </td>
+                  <td>
+                    {% if t.status == 'DELIVERED' %}
+                      <span class="badge bg-success-lt">DELIVERED</span>
+                    {% elif t.status == 'SENT' %}
+                      <span class="badge bg-blue-lt">SENT</span>
+                    {% elif t.status == 'EXPIRED' %}
+                      <span class="badge bg-warning-lt">EXPIRED</span>
+                    {% elif t.status == 'FAILED' %}
+                      <span class="badge bg-danger-lt">FAILED</span>
+                    {% else %}
+                      <span class="badge bg-secondary-lt">{{ t.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted small">
+                    {{ t.created_at.strftime('%H:%M:%S') if t.created_at else '' }}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-4">
+                    Нет отправленных сообщений.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
