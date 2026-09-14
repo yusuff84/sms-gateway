@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     # Anti-Flood Protection: Minimum interval between sending to the same phone number
     PHONE_NUMBER_COOLDOWN_SECONDS: int = 45
 
+    # Balance Protection: Strictly allow only Russian mobile numbers (+79XXXXXXXXX)
+    ONLY_RU_MOBILE: bool = True
+
     class Config:
         env_file = ".env"
         extra = "ignore"

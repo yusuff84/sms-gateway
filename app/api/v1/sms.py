@@ -30,14 +30,43 @@ router = APIRouter(tags=["SMS"])
 
 
 def clean_phone_number(raw_phone: str) -> str:
-    cleaned = re.sub(r"[^\d+]", "", raw_phone)
+    cleaned = re.sub(r"[^\d+]", "", raw_phone.strip())
     if not cleaned:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Phone number cannot be empty."
+            detail="Номер телефона не может быть пустым."
         )
-    if not cleaned.startswith("+"):
+
+    # Normalize Russian national format (89XXXXXXXXX -> +79XXXXXXXXX, 79XXXXXXXXX -> +79XXXXXXXXX)
+    if re.match(r"^89\d{9}$", cleaned):
+        cleaned = "+7" + cleaned[1:]
+    elif re.match(r"^79\d{9}$", cleaned):
         cleaned = "+" + cleaned
+    elif not cleaned.startswith("+"):
+        cleaned = "+" + cleaned
+
+    # Balance protection: only allow genuine Russian mobile numbers (+79XXXXXXXXX)
+    if settings.ONLY_RU_MOBILE:
+        if not re.match(r"^\+79\d{9}$", cleaned):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Отправка отклонена: номер {cleaned} не является мобильным номером РФ (+79XXXXXXXXX). Международные направления и городские номера отключены для защиты от списаний."
+            )
+
+        # Block special non-RU / high-tariff zones using the +79XX range
+        # +7940: Abkhazia (A-Mobile / Aquafon) - international rates
+        # +7997, +7998: South Ossetia - international rates
+        if cleaned.startswith("+7940"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Отправка отклонена: номер {cleaned} относится к Абхазии (+7940). Международные направления отключены для защиты баланса."
+            )
+        if cleaned.startswith("+7997") or cleaned.startswith("+7998"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Отправка отклонена: номер {cleaned} относится к Южной Осетии (+7997/+7998). Международные направления отключены для защиты баланса."
+            )
+
     return cleaned
 
 

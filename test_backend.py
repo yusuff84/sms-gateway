@@ -30,13 +30,31 @@ def test_suite():
 
         headers = {"X-API-Key": DEFAULT_API_KEY}
 
-        # 3. Offline Device Rejection Test (503 Service Unavailable)
+        # 3. Non-RU / Abkhazia / Foreign phone rejection test
+        print("✓ Testing Non-RU & Abkhazia phone rejection (balance protection)...")
+        # Abkhazia +7940...
+        res_abkhazia = client.post("/api/v1/sms/send", json={"phone_number": "+79407123456", "message": "Code 1111", "allow_queue": True}, headers=headers)
+        assert res_abkhazia.status_code == 422
+        assert "Абхазии" in res_abkhazia.json()["detail"]
+
+        # Kazakhstan +777...
+        res_kz = client.post("/api/v1/sms/send", json={"phone_number": "+77777777777", "message": "Code 2222", "allow_queue": True}, headers=headers)
+        assert res_kz.status_code == 422
+        assert "не является мобильным номером РФ" in res_kz.json()["detail"]
+
+        # Foreign +1...
+        res_usa = client.post("/api/v1/sms/send", json={"phone_number": "+12025550123", "message": "Code 3333", "allow_queue": True}, headers=headers)
+        assert res_usa.status_code == 422
+        assert "не является мобильным номером РФ" in res_usa.json()["detail"]
+        print("✓ Foreign and Abkhazia numbers properly rejected with 422!")
+
+        # 4. Offline Device Rejection Test (503 Service Unavailable)
         res_offline = client.post("/api/v1/sms/send", json={"phone_number": "+79991112233", "message": "Test code"}, headers=headers)
         assert res_offline.status_code == 503
         assert "SMS-шлюз сейчас недоступен" in res_offline.json()["detail"]
         print("✓ Offline phone check verified: returns 503 Service Unavailable when device is offline")
 
-        # 4. Idempotency Key Test with allow_queue=True
+        # 5. Idempotency Key Test with allow_queue=True
         idemp_key = f"test_order_uniq_{uuid.uuid4().hex[:8]}"
         payload_1 = {
             "phone_number": "+7 999 111-22-33",
