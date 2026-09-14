@@ -35,6 +35,10 @@ class SmsSendRequest(BaseModel):
     )
 
     # Delivery & control options
+    allow_queue: bool = Field(
+        False,
+        description="Поставить в очередь, если телефон не в сети. По умолчанию False — сразу возвращать ошибку 503."
+    )
     idempotency_key: Optional[str] = Field(None, max_length=64, description="Unique client key to prevent duplicate SMS")
     ttl_seconds: Optional[int] = Field(300, ge=1, le=86400, description="Expiration time in seconds (default 300 = 5 min)")
     webhook_url: Optional[str] = Field(None, max_length=500, description="URL for status updates (SENT, DELIVERED, FAILED)")

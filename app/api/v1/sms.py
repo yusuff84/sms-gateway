@@ -88,7 +88,14 @@ async def send_sms(
                 is_duplicate=True
             )
 
-    # 3. Recipient Anti-Flood Cooldown (protect single SIM from burning quota on the same number)
+    # 3. Gateway availability check: immediately return 503 if phone is offline (unless allow_queue is True)
+    if not payload.allow_queue and not manager.is_device_online():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="SMS-шлюз сейчас недоступен: телефон для отправки SMS не в сети. Попробуйте позже или используйте альтернативный способ."
+        )
+
+    # 4. Recipient Anti-Flood Cooldown (protect single SIM from burning quota on the same number)
     if settings.PHONE_NUMBER_COOLDOWN_SECONDS > 0:
         cutoff = datetime.now(timezone.utc) - timedelta(seconds=settings.PHONE_NUMBER_COOLDOWN_SECONDS)
         flood_stmt = select(SmsTask).where(

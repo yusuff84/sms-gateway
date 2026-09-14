@@ -30,13 +30,20 @@ def test_suite():
 
         headers = {"X-API-Key": DEFAULT_API_KEY}
 
-        # 3. Idempotency Key Test
+        # 3. Offline Device Rejection Test (503 Service Unavailable)
+        res_offline = client.post("/api/v1/sms/send", json={"phone_number": "+79991112233", "message": "Test code"}, headers=headers)
+        assert res_offline.status_code == 503
+        assert "SMS-шлюз сейчас недоступен" in res_offline.json()["detail"]
+        print("✓ Offline phone check verified: returns 503 Service Unavailable when device is offline")
+
+        # 4. Idempotency Key Test with allow_queue=True
         idemp_key = f"test_order_uniq_{uuid.uuid4().hex[:8]}"
         payload_1 = {
             "phone_number": "+7 999 111-22-33",
             "message": "Код для входа: 4421",
             "idempotency_key": idemp_key,
-            "ttl_seconds": 300
+            "ttl_seconds": 300,
+            "allow_queue": True
         }
         res_1 = client.post("/api/v1/sms/send", json=payload_1, headers=headers)
         assert res_1.status_code == 201
@@ -53,11 +60,12 @@ def test_suite():
         assert data_2["is_duplicate"] is True
         print("✓ Idempotency verified: duplicate request returned existing task with is_duplicate=True")
 
-        # 4. TTL / Expired Verification Code Test
+        # 5. TTL / Expired Verification Code Test
         payload_expired = {
             "phone_number": "+7 999 888-77-66",
             "message": "Срочный код: 9999",
-            "ttl_seconds": 1  # Expires in 1 second!
+            "ttl_seconds": 1,  # Expires in 1 second!
+            "allow_queue": True
         }
         res_exp = client.post("/api/v1/sms/send", json=payload_expired, headers=headers)
         assert res_exp.status_code == 201
@@ -102,6 +110,17 @@ def test_suite():
             }))
             time.sleep(0.3)
 
+            # Test live code-only send while phone is online (should succeed with 201)
+            res_auto = client.post(
+                "/api/v1/sms/send",
+                json={"phone_number": "+79993332211", "code": "6541", "idempotency_key": f"auto_{uuid.uuid4().hex[:6]}"},
+                headers=headers
+            )
+            assert res_auto.status_code == 201
+            auto_data = res_auto.json()
+            assert "6541" in auto_data["message"]
+            print(f"✓ Code-only auto-template generated while online: '{auto_data['message']}'")
+
         # 6. Verify active task is DELIVERED and expired task is EXPIRED
         res_check_1 = client.get(f"/api/v1/sms/{active_task_id}", headers=headers)
         assert res_check_1.status_code == 200
@@ -113,7 +132,7 @@ def test_suite():
         assert res_check_exp.json()["status"] == "EXPIRED"
         print(f"✓ Expired task status in DB correctly marked: {res_check_exp.json()['status']}")
 
-        # 7. Test Anti-Fraud Spintax & Template Rotation
+        # 7. Test Anti-Fraud Spintax & Template Rotation Preview
         print("✓ Testing Anti-Fraud Template Generation & Rotation...")
         res_prev = client.get("/api/v1/templates/preview?code=9911&count=5", headers=headers)
         assert res_prev.status_code == 200
@@ -122,17 +141,6 @@ def test_suite():
         print(f"  Generated {len(variations)} sample variations:")
         for v in variations[:3]:
             print(f"    -> {v}")
-
-        # Send request with code-only (backend auto-selects template)
-        res_auto = client.post(
-            "/api/v1/sms/send",
-            json={"phone_number": "+79993332211", "code": "6541", "idempotency_key": f"auto_{uuid.uuid4().hex[:6]}"},
-            headers=headers
-        )
-        assert res_auto.status_code == 201
-        auto_data = res_auto.json()
-        assert "6541" in auto_data["message"]
-        print(f"✓ Code-only auto-template generated: '{auto_data['message']}'")
 
         # 8. Check Admin panel
         res = client.get("/admin/login")
