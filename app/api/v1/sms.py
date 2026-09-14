@@ -126,7 +126,9 @@ async def send_sms(
         final_message = render_template_string(
             payload.message,
             variables,
-            add_noise=payload.anti_fraud_noise
+            add_noise=payload.anti_fraud_noise,
+            use_homoglyphs=payload.use_homoglyphs,
+            homoglyph_rate=payload.homoglyph_rate
         )
     else:
         # Automatically select an anti-fraud template from the database
@@ -147,7 +149,9 @@ async def send_sms(
             final_message = render_template_string(
                 template.template_text,
                 variables,
-                add_noise=payload.anti_fraud_noise
+                add_noise=payload.anti_fraud_noise,
+                use_homoglyphs=payload.use_homoglyphs,
+                homoglyph_rate=payload.homoglyph_rate
             )
         else:
             # Fallback default spintax if no templates seeded
@@ -155,7 +159,9 @@ async def send_sms(
             final_message = render_template_string(
                 fallback,
                 variables,
-                add_noise=payload.anti_fraud_noise
+                add_noise=payload.anti_fraud_noise,
+                use_homoglyphs=payload.use_homoglyphs,
+                homoglyph_rate=payload.homoglyph_rate
             )
 
     # 4. Calculate expiration time (TTL)
@@ -316,12 +322,14 @@ async def preview_template_variations(
     template_id: Optional[int] = None,
     spintax: Optional[str] = None,
     code: str = "4921",
+    use_homoglyphs: bool = True,
+    homoglyph_rate: float = Query(0.30, ge=0.0, le=1.0),
     count: int = Query(5, ge=1, le=20),
     api_key: ApiKey = Depends(get_current_api_key),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Генерирует N случайных вариаций текста для проверки работы Spintax и антифрода.
+    Генерирует N случайных вариаций текста для проверки работы Spintax и визуальных английских букв-омоглифов.
     """
     raw_text = spintax
     if not raw_text and template_id:
@@ -335,11 +343,19 @@ async def preview_template_variations(
         raw_text = "{Ваш|Твой|Одноразовый} {код подтверждения|пароль для входа|проверочный код}: {code}. {Никому не сообщайте|Действителен 5 минут|Не передавайте третьим лицам}."
 
     samples = [
-        render_template_string(raw_text, {"code": code}, add_noise=True)
+        render_template_string(
+            raw_text,
+            {"code": code},
+            add_noise=False,
+            use_homoglyphs=use_homoglyphs,
+            homoglyph_rate=homoglyph_rate
+        )
         for _ in range(count)
     ]
     return {
         "original_template": raw_text,
         "sample_count": count,
+        "use_homoglyphs": use_homoglyphs,
+        "homoglyph_rate": homoglyph_rate,
         "variations": samples
     }

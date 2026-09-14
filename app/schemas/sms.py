@@ -30,8 +30,18 @@ class SmsSendRequest(BaseModel):
         description="Additional template variables (e.g. {'service': 'MyBank'})"
     )
     anti_fraud_noise: bool = Field(
-        True,
+        False,
         description="Append subtle unique entropy/reference so carrier filters never see identical message hashes."
+    )
+    use_homoglyphs: bool = Field(
+        True,
+        description="Заменять кириллические буквы визуально идентичными английскими (B, a, o, p, c, e, y, x) для обхода DPI-фильтров оператора"
+    )
+    homoglyph_rate: float = Field(
+        0.30,
+        ge=0.0,
+        le=1.0,
+        description="Доля заменяемых букв (по умолчанию 30%)"
     )
 
     # Delivery & control options
