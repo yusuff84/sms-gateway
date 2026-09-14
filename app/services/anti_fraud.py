@@ -5,13 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.sms_template import SmsTemplate
 
-# Zero-width invisible Unicode characters (completely invisible to human eye, unique byte sequence to carrier DPI)
-# \u200B - Zero-Width Space
-# \u200C - Zero-Width Non-Joiner
-# \u2060 - Word Joiner
-# \uFEFF - Zero-Width No-Break Space
-ZERO_WIDTH_CHARS = ["\u200B", "\u200C", "\u2060", "\uFEFF"]
-
 
 def parse_spintax(text: str) -> str:
     """
@@ -33,35 +26,11 @@ def parse_spintax(text: str) -> str:
     return text
 
 
-def inject_invisible_antifraud_entropy(text: str) -> str:
-    """
-    Injects 2-4 invisible zero-width Unicode characters into text words or whitespace.
-    CRITICAL: Never touches digits (to preserve 100% copy-paste / OTP autofill compatibility).
-    
-    Visually for the user: looks 100% clean and natural, without any weird tags or noise.
-    For the telecom carrier DPI filter: every single message has a completely unique byte sequence and SHA-256 hash!
-    """
-    safe_indices = [
-        i for i in range(1, len(text))
-        if not text[i-1].isdigit() and not text[i].isdigit()
-    ]
-    if not safe_indices:
-        return text + random.choice(ZERO_WIDTH_CHARS)
-
-    count = min(len(safe_indices), random.randint(2, 4))
-    chosen_positions = sorted(random.sample(safe_indices, count), reverse=True)
-
-    chars = list(text)
-    for pos in chosen_positions:
-        chars.insert(pos, random.choice(ZERO_WIDTH_CHARS))
-    return "".join(chars)
-
-
-def render_template_string(template_str: str, variables: Dict[str, Any], add_noise: bool = True) -> str:
+def render_template_string(template_str: str, variables: Dict[str, Any], add_noise: bool = False) -> str:
     """
     1. Resolves Spintax {A|B|C}
-    2. Substitutes variables like {code}, {service}, {time}
-    3. Injects invisible zero-width entropy to foil telecom anti-spam hash matching
+    2. Substitutes variables like {code}, {service}
+    3. Normalizes whitespace so the text is 100% natural, clean and readable
     """
     resolved_spintax = parse_spintax(template_str)
 
@@ -74,10 +43,6 @@ def render_template_string(template_str: str, variables: Dict[str, Any], add_noi
 
     # Clean up double spaces and normalize
     rendered = re.sub(r"[ \t]+", " ", rendered).strip()
-
-    if add_noise:
-        rendered = inject_invisible_antifraud_entropy(rendered)
-
     return rendered
 
 
