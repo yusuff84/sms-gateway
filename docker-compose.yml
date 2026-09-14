@@ -4,7 +4,7 @@ services:
     container_name: sms_gateway_backend
     restart: always
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8088:8000"
     environment:
       - PROJECT_NAME=SMS Gateway API
       - DATABASE_URL=sqlite+aiosqlite:////app/data/sms_gateway.db
