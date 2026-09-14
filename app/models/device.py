@@ -22,7 +22,7 @@ class Device(Base):
     last_ping_at = Column(DateTime(timezone=True), nullable=True)
 
     # Rotation & SIM metrics
-    sim_count = Column(Integer, default=2, server_default="2", nullable=False)
+    sim_count = Column(Integer, default=1, server_default="1", nullable=False)
     last_sim_slot = Column(Integer, default=1, server_default="1", nullable=False)
     total_sent_count = Column(Integer, default=0, server_default="0", nullable=False)
     hourly_sent_count = Column(Integer, default=0, server_default="0", nullable=False)

@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Device Settings
     DEVICE_OFFLINE_THRESHOLD_SECONDS: int = 60
 
+    # Anti-Flood Protection: Minimum interval between sending to the same phone number
+    PHONE_NUMBER_COOLDOWN_SECONDS: int = 45
+
     class Config:
         env_file = ".env"
         extra = "ignore"

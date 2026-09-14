@@ -1,6 +1,8 @@
 import asyncio
 import json
 import logging
+import random
+import time
 from typing import Dict, Optional, List
 from fastapi import WebSocket
 from datetime import datetime, timezone
@@ -16,6 +18,8 @@ class ConnectionManager:
     def __init__(self):
         # Map: device_id -> WebSocket
         self.active_connections: Dict[int, WebSocket] = {}
+        # Map: device_id -> float timestamp of last dispatched SMS (for human pacing)
+        self.last_dispatch_time: Dict[int, float] = {}
 
     async def connect(self, device_id: int, websocket: WebSocket):
         await websocket.accept()
@@ -84,7 +88,9 @@ class ConnectionManager:
             return False
 
         # Anti-fraud SIM rotation logic:
-        # If task.sim_slot == 0 (Auto), dynamically alternate SIM 1 <-> SIM 2
+        # If task.sim_slot == 0 (Auto):
+        # - If device has multiple SIMs (>1): alternate SIM 1 <-> SIM 2
+        # - If device has single SIM (==1): strictly use SIM 1
         assigned_sim = task.sim_slot
         async with AsyncSessionLocal() as session:
             dev_stmt = select(Device).where(Device.id == device_id)
@@ -92,10 +98,13 @@ class ConnectionManager:
             dev = dev_res.scalar_one_or_none()
             if dev:
                 if assigned_sim == 0:
-                    # Alternate SIM slots: 1 -> 2 -> 1 -> 2
-                    next_slot = 2 if dev.last_sim_slot == 1 else 1
-                    assigned_sim = next_slot
-                    dev.last_sim_slot = next_slot
+                    if dev.sim_count > 1:
+                        next_slot = 2 if dev.last_sim_slot == 1 else 1
+                        assigned_sim = next_slot
+                        dev.last_sim_slot = next_slot
+                    else:
+                        assigned_sim = 1
+                        dev.last_sim_slot = 1
 
                 dev.total_sent_count += 1
                 dev.hourly_sent_count += 1
@@ -108,6 +117,14 @@ class ConnectionManager:
                     t.sim_slot = assigned_sim
 
                 await session.commit()
+
+        # Natural Human Pacing: ensure smooth dispatch interval (2.5 - 4.5s) to prevent carrier burst flags
+        now = time.time()
+        last_time = self.last_dispatch_time.get(device_id, 0)
+        elapsed = now - last_time
+        if elapsed < 2.5:
+            await asyncio.sleep(random.uniform(2.5, 4.0) - elapsed)
+        self.last_dispatch_time[device_id] = time.time()
 
         payload = {
             "type": "send_sms",

@@ -17,6 +17,7 @@ from app.schemas.sms import (
     TemplateOut
 )
 from app.auth.security import get_current_api_key
+from app.config import settings
 from app.ws.manager import manager
 from app.core.limiter import limiter
 from app.services.anti_fraud import (
@@ -87,7 +88,27 @@ async def send_sms(
                 is_duplicate=True
             )
 
-    # 3. Resolve final SMS message with anti-fraud Spintax
+    # 3. Recipient Anti-Flood Cooldown (protect single SIM from burning quota on the same number)
+    if settings.PHONE_NUMBER_COOLDOWN_SECONDS > 0:
+        cutoff = datetime.now(timezone.utc) - timedelta(seconds=settings.PHONE_NUMBER_COOLDOWN_SECONDS)
+        flood_stmt = select(SmsTask).where(
+            SmsTask.phone_number == cleaned_phone,
+            SmsTask.created_at >= cutoff
+        ).order_by(SmsTask.created_at.desc()).limit(1)
+        flood_res = await db.execute(flood_stmt)
+        recent = flood_res.scalar_one_or_none()
+        if recent:
+            recent_time = recent.created_at
+            if recent_time.tzinfo is None:
+                recent_time = recent_time.replace(tzinfo=timezone.utc)
+            elapsed = (datetime.now(timezone.utc) - recent_time).total_seconds()
+            remaining = max(1, int(settings.PHONE_NUMBER_COOLDOWN_SECONDS - elapsed))
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Повторная отправка на номер {cleaned_phone} возможна через {remaining} сек."
+            )
+
+    # 4. Resolve final SMS message with anti-fraud Spintax
     variables = dict(payload.variables or {})
     if payload.code:
         variables["code"] = payload.code
@@ -181,6 +202,12 @@ async def get_sms_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"SMS task with id '{task_id}' not found."
         )
+
+    if task.status == SmsStatus.QUEUED and task.is_expired:
+        task.status = SmsStatus.EXPIRED
+        task.error_message = "Task expired while queued"
+        await db.commit()
+        await db.refresh(task)
 
     return SmsStatusResponse(
         task_id=task.id,
