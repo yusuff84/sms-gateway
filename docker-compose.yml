@@ -5,12 +5,14 @@ services:
     restart: always
     ports:
       - "127.0.0.1:8088:8000"
+    env_file:
+      - .env
     environment:
-      - PROJECT_NAME=SMS Gateway API
-      - DATABASE_URL=sqlite+aiosqlite:////app/data/sms_gateway.db
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=admin123
-      - SECRET_KEY=sms-gateway-secret-key-change-me-in-production-9988
+      - PROJECT_NAME=${PROJECT_NAME:-SMS Gateway API}
+      - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:////app/data/sms_gateway.db}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - SECRET_KEY=${SECRET_KEY:-sms-gateway-secret-key-change-me-in-production-9988}
     volumes:
       - sms_gateway_data:/app/data
     healthcheck:
