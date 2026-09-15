@@ -19,6 +19,7 @@ from app.schemas.sms import (
 )
 from app.auth.security import get_current_api_key
 from app.config import settings
+from app.core.timezone import to_msk
 from app.ws.manager import manager
 from app.core.limiter import limiter
 from app.services.anti_fraud import (
@@ -113,8 +114,8 @@ async def send_sms(
                 phone_number=existing_task.phone_number,
                 message=existing_task.message,
                 status=existing_task.status,
-                created_at=existing_task.created_at,
-                expires_at=existing_task.expires_at,
+                created_at=to_msk(existing_task.created_at),
+                expires_at=to_msk(existing_task.expires_at),
                 is_duplicate=True
             )
 
@@ -234,8 +235,8 @@ async def send_sms(
         phone_number=task.phone_number,
         message=task.message,
         status=task.status,
-        created_at=task.created_at,
-        expires_at=task.expires_at,
+        created_at=to_msk(task.created_at),
+        expires_at=to_msk(task.expires_at),
         is_duplicate=False
     )
 
@@ -248,6 +249,7 @@ async def get_sms_status(
 ):
     """
     Получить актуальный статус отправки конкретного SMS по его task_id.
+    Время возвращается в Московском часовом поясе (MSK, UTC+3).
     """
     stmt = select(SmsTask).where(SmsTask.id == task_id)
     result = await db.execute(stmt)
@@ -271,10 +273,10 @@ async def get_sms_status(
         message=task.message,
         status=task.status,
         error_message=task.error_message,
-        created_at=task.created_at,
-        expires_at=task.expires_at,
-        sent_at=task.sent_at,
-        delivered_at=task.delivered_at,
+        created_at=to_msk(task.created_at),
+        expires_at=to_msk(task.expires_at),
+        sent_at=to_msk(task.sent_at),
+        delivered_at=to_msk(task.delivered_at),
         webhook_url=task.webhook_url,
         sim_slot=task.sim_slot
     )
@@ -290,6 +292,7 @@ async def list_sms_tasks(
 ):
     """
     Список отправленных SMS с пагинацией и фильтрацией по статусу.
+    Время возвращается в Московском часовом поясе (MSK, UTC+3).
     """
     base_query = select(SmsTask)
     count_query = select(func.count(SmsTask.id))
@@ -312,10 +315,10 @@ async def list_sms_tasks(
             message=t.message,
             status=t.status,
             error_message=t.error_message,
-            created_at=t.created_at,
-            expires_at=t.expires_at,
-            sent_at=t.sent_at,
-            delivered_at=t.delivered_at,
+            created_at=to_msk(t.created_at),
+            expires_at=to_msk(t.expires_at),
+            sent_at=to_msk(t.sent_at),
+            delivered_at=to_msk(t.delivered_at),
             webhook_url=t.webhook_url,
             sim_slot=t.sim_slot
         )

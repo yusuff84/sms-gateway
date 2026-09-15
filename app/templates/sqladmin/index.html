@@ -252,7 +252,7 @@
                     {% endif %}
                   </td>
                   <td class="text-muted small">
-                    {{ t.created_at.strftime('%H:%M:%S') if t.created_at else '' }}
+                    {{ t.created_at_msk }}
                   </td>
                 </tr>
                 {% endfor %}

@@ -6,6 +6,7 @@ from starlette.responses import Response, RedirectResponse
 from sqladmin import ModelView, BaseView, expose
 
 from app.database import AsyncSessionLocal
+from app.core.timezone import to_msk, format_datetime_msk, format_time_msk
 from app.models.api_key import ApiKey
 from app.models.device import Device
 from app.models.sms_task import SmsTask
@@ -13,7 +14,13 @@ from app.models.sms_template import SmsTemplate
 from app.models.blacklisted_phone import BlacklistedPhone
 
 
-class ApiKeyAdmin(ModelView, model=ApiKey):
+class BaseAdminModelView(ModelView):
+    """Base admin model view formatting all datetimes in Moscow Time (MSK, UTC+3)."""
+    column_type_formatters = {datetime: lambda v: format_datetime_msk(v)}
+    column_type_formatters_detail = {datetime: lambda v: format_datetime_msk(v)}
+
+
+class ApiKeyAdmin(BaseAdminModelView, model=ApiKey):
     name = "API Ключ"
     name_plural = "API Ключи"
     icon = "fa-solid fa-key"
@@ -31,7 +38,7 @@ class ApiKeyAdmin(ModelView, model=ApiKey):
     form_columns = [ApiKey.name, ApiKey.description, ApiKey.is_active]
 
 
-class DeviceAdmin(ModelView, model=Device):
+class DeviceAdmin(BaseAdminModelView, model=Device):
     name = "Android Устройство"
     name_plural = "Android Устройства"
     icon = "fa-solid fa-mobile-screen"
@@ -53,7 +60,7 @@ class DeviceAdmin(ModelView, model=Device):
     form_columns = [Device.name, Device.token, Device.sim_count, Device.max_hourly_per_sim, Device.is_active]
 
 
-class SmsTemplateAdmin(ModelView, model=SmsTemplate):
+class SmsTemplateAdmin(BaseAdminModelView, model=SmsTemplate):
     name = "SMS Шаблон"
     name_plural = "SMS Шаблоны (Антифрод)"
     icon = "fa-solid fa-wand-magic-sparkles"
@@ -72,7 +79,7 @@ class SmsTemplateAdmin(ModelView, model=SmsTemplate):
     form_columns = [SmsTemplate.name, SmsTemplate.category, SmsTemplate.template_text, SmsTemplate.is_active]
 
 
-class BlacklistedPhoneAdmin(ModelView, model=BlacklistedPhone):
+class BlacklistedPhoneAdmin(BaseAdminModelView, model=BlacklistedPhone):
     name = "Черный список"
     name_plural = "Черный список (Блокировки)"
     icon = "fa-solid fa-ban"
@@ -90,7 +97,7 @@ class BlacklistedPhoneAdmin(ModelView, model=BlacklistedPhone):
     form_columns = [BlacklistedPhone.phone_number, BlacklistedPhone.reason, BlacklistedPhone.is_active]
 
 
-class SmsTaskAdmin(ModelView, model=SmsTask):
+class SmsTaskAdmin(BaseAdminModelView, model=SmsTask):
     name = "SMS Сообщение"
     name_plural = "SMS Сообщения"
     icon = "fa-solid fa-envelope"
@@ -102,8 +109,8 @@ class SmsTaskAdmin(ModelView, model=SmsTask):
         SmsTask.status,
         SmsTask.sim_slot,
         SmsTask.created_at,
-        SmsTask.expires_at,
         SmsTask.sent_at,
+        SmsTask.delivered_at,
         SmsTask.error_message,
     ]
     column_searchable_list = [SmsTask.phone_number, SmsTask.message, SmsTask.id, SmsTask.status]
@@ -177,7 +184,7 @@ class AbusersAnalyticsView(BaseView):
                     "count_7d": count_7d,
                     "count_24h": r.count_24h or 0,
                     "count_total": r.count_total or 0,
-                    "last_seen": r.last_seen,
+                    "last_seen_msk": format_datetime_msk(r.last_seen, "%d.%m.%Y %H:%M"),
                     "risk": risk,
                     "is_blocked": is_blocked,
                     "block_reason": block_reason

@@ -17,6 +17,7 @@ from app.config import settings
 from app.database import init_db, engine, AsyncSessionLocal
 from app.seed import seed_initial_data
 from app.auth.admin_auth import admin_auth
+from app.core.timezone import now_msk, to_msk, format_time_msk
 from app.models.sms_task import SmsTask, SmsStatus
 from app.models.device import Device
 from app.models.blacklisted_phone import BlacklistedPhone
@@ -46,19 +47,22 @@ ACTIVE_DEVICES_GAUGE = Gauge('sms_active_devices', 'Number of active connected A
 
 
 class SMSGatewayAdmin(Admin):
-    """Custom Admin with Modern Analytics Dashboard & Anti-Fraud Abusers Overview."""
+    """Custom Admin with Modern Analytics Dashboard & Anti-Fraud Abusers Overview (Moscow Time MSK)."""
     @login_required
     async def index(self, request: Request) -> Response:
         cutoff_7d = datetime.now(timezone.utc) - timedelta(days=7)
-        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        # 00:00 MSK today converted to UTC for database queries
+        now_in_msk = now_msk()
+        today_start_msk = now_in_msk.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start_utc = today_start_msk.astimezone(timezone.utc)
 
         async with AsyncSessionLocal() as session:
             # 1. Total tasks
             total_res = await session.execute(select(func.count(SmsTask.id)))
             total_tasks = total_res.scalar() or 0
 
-            # 2. Today tasks
-            today_res = await session.execute(select(func.count(SmsTask.id)).where(SmsTask.created_at >= today_start))
+            # 2. Today tasks (from 00:00 MSK)
+            today_res = await session.execute(select(func.count(SmsTask.id)).where(SmsTask.created_at >= today_start_utc))
             tasks_today = today_res.scalar() or 0
 
             # 3. 7 days tasks
@@ -99,9 +103,11 @@ class SMSGatewayAdmin(Admin):
             bl_res = await session.execute(select(BlacklistedPhone.phone_number).where(BlacklistedPhone.is_active == True))
             blocked_numbers = set(bl_res.scalars().all())
 
-            # 8. Recent 7 tasks
+            # 8. Recent 7 tasks formatted in Moscow time (MSK)
             recent_res = await session.execute(select(SmsTask).order_by(SmsTask.created_at.desc()).limit(7))
             recent_tasks = recent_res.scalars().all()
+            for t in recent_tasks:
+                t.created_at_msk = format_time_msk(t.created_at)
 
             context = {
                 "request": request,
