@@ -64,10 +64,34 @@ class ConnectionManager:
             return device_id in self.active_connections
         return len(self.active_connections) > 0
 
-    def get_first_online_device_id(self) -> Optional[int]:
-        if self.active_connections:
-            return next(iter(self.active_connections.keys()))
-        return None
+    def get_next_online_device_id(self) -> Optional[int]:
+        """
+        Selects the next online device using smart multi-device load balancing.
+        Prioritizes the device that has been idle the longest (oldest last_dispatch_time).
+        When multiple phones are connected, evenly alternates:
+        SMS 1 -> Phone A
+        SMS 2 -> Phone B
+        SMS 3 -> Phone A ...
+        """
+        online_device_ids = list(self.active_connections.keys())
+        if not online_device_ids:
+            return None
+        if len(online_device_ids) == 1:
+            return online_device_ids[0]
+
+        # Sort candidate devices by the time since their last SMS dispatch (ascending = most idle first)
+        sorted_devices = sorted(
+            online_device_ids,
+            key=lambda d_id: self.last_dispatch_time.get(d_id, 0)
+        )
+        selected_id = sorted_devices[0]
+        logger.info(
+            f"Multi-device load balancer chose Device ID {selected_id} (active pool: {online_device_ids})"
+        )
+        return selected_id
+
+    # Backwards compatibility alias
+    get_first_online_device_id = get_next_online_device_id
 
     async def send_task(self, device_id: int, task: SmsTask) -> bool:
         # Check if task is already expired
@@ -160,7 +184,7 @@ class ConnectionManager:
 
     async def dispatch_queued_tasks(self, device_id: int):
         """
-        Send pending queued SMS tasks to the connected device with human-like pacing (anti-burst).
+        Send pending queued SMS tasks distributing across all online devices with human-like pacing (anti-burst).
         """
         async with AsyncSessionLocal() as session:
             stmt = (
@@ -184,14 +208,18 @@ class ConnectionManager:
                         await s.commit()
                 continue
 
-            success = await self.send_task(device_id, task)
+            target_device = self.get_next_online_device_id()
+            if not target_device:
+                break
+
+            success = await self.send_task(target_device, task)
             if success:
                 async with AsyncSessionLocal() as s:
                     st = select(SmsTask).where(SmsTask.id == task.id)
                     r = await s.execute(st)
                     t = r.scalar_one_or_none()
                     if t:
-                        t.device_id = device_id
+                        t.device_id = target_device
                         t.status = SmsStatus.SENDING
                         await s.commit()
                 # Anti-burst human-like delay (1.5 seconds between dispatch)

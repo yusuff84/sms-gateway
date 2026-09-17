@@ -107,6 +107,7 @@ class SmsTaskAdmin(BaseAdminModelView, model=SmsTask):
         SmsTask.phone_number,
         SmsTask.message,
         SmsTask.status,
+        SmsTask.device,
         SmsTask.sim_slot,
         SmsTask.created_at,
         SmsTask.sent_at,
