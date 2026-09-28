@@ -47,9 +47,16 @@ async def device_websocket_endpoint(
             msg_type = data.get("type")
 
             if msg_type == "ping":
+                # Ensure device is registered in active connections
+                if manager.active_connections.get(device_id) is not websocket:
+                    manager.active_connections[device_id] = websocket
                 await websocket.send_text(json.dumps({"type": "pong"}))
 
             elif msg_type == "heartbeat":
+                # Ensure device is registered in active connections
+                if manager.active_connections.get(device_id) is not websocket:
+                    manager.active_connections[device_id] = websocket
+
                 battery = data.get("battery_level")
                 charging = data.get("is_charging", False)
                 async with AsyncSessionLocal() as session:
@@ -60,6 +67,7 @@ async def device_websocket_endpoint(
                         if battery is not None:
                             dev.battery_level = int(battery)
                         dev.is_charging = bool(charging)
+                        dev.is_online = True  # Always mark online when receiving heartbeat!
                         dev.last_ping_at = datetime.now(timezone.utc)
                         await session.commit()
 
@@ -107,7 +115,7 @@ async def device_websocket_endpoint(
                 logger.debug(f"Unknown message type '{msg_type}' from device {device_id}")
 
     except WebSocketDisconnect:
-        await manager.disconnect(device_id)
+        await manager.disconnect(device_id, websocket=websocket)
     except Exception as e:
         logger.error(f"WebSocket error for device {device_id}: {e}")
-        await manager.disconnect(device_id)
+        await manager.disconnect(device_id, websocket=websocket)

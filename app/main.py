@@ -77,6 +77,14 @@ class SMSGatewayAdmin(Admin):
             # 5. Devices
             devices_res = await session.execute(select(Device).where(Device.is_active == True))
             devices = devices_res.scalars().all()
+            now_utc = datetime.now(timezone.utc)
+            for d in devices:
+                is_connected = (d.id in manager.active_connections)
+                recent_ping = False
+                if d.last_ping_at:
+                    lpa = d.last_ping_at if d.last_ping_at.tzinfo else d.last_ping_at.replace(tzinfo=timezone.utc)
+                    recent_ping = (now_utc - lpa).total_seconds() < 60
+                d.is_online = is_connected or (d.is_online and recent_ping)
             online_devices = sum(1 for d in devices if d.is_online)
 
             # 6. Blocked count

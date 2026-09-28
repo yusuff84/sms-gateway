@@ -23,6 +23,13 @@ class ConnectionManager:
 
     async def connect(self, device_id: int, websocket: WebSocket):
         await websocket.accept()
+        old_ws = self.active_connections.get(device_id)
+        if old_ws and old_ws is not websocket:
+            try:
+                await old_ws.close(code=1000, reason="Replaced by new connection")
+            except Exception:
+                pass
+
         self.active_connections[device_id] = websocket
         logger.info(f"Device ID {device_id} connected via WebSocket.")
 
@@ -39,12 +46,15 @@ class ConnectionManager:
         # Dispatch any queued tasks
         asyncio.create_task(self.dispatch_queued_tasks(device_id))
 
-    async def disconnect(self, device_id: int):
+    async def disconnect(self, device_id: int, websocket: Optional[WebSocket] = None):
+        # Only remove if the disconnecting websocket is the current active one!
+        current_ws = self.active_connections.get(device_id)
+        if websocket is not None and current_ws is not websocket:
+            logger.info(f"Ignoring disconnect for Device ID {device_id}: closed socket is already superseded.")
+            return
+
         if device_id in self.active_connections:
-            try:
-                del self.active_connections[device_id]
-            except KeyError:
-                pass
+            del self.active_connections[device_id]
             logger.info(f"Device ID {device_id} disconnected.")
 
         # Mark device as offline in DB
