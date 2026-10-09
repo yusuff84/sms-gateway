@@ -11,22 +11,25 @@
           Центр управления шлюзом
         </div>
         <h2 class="page-title mt-1 d-flex align-items-center">
-          Обзор системы и Антифрод
+          Обзор системы и Балансировка
           {% if online_devices > 0 %}
             <span class="badge bg-green-lt ms-3 px-3 py-2 d-inline-flex align-items-center" style="font-size: 0.8rem; border-radius: 9999px;">
-              <span class="status-dot status-dot-animated bg-success me-2"></span> GSM Шлюз Активен ({{ online_devices }})
+              <span class="status-dot status-dot-animated bg-success me-2"></span> GSM Шлюз Активен ({{ online_devices }} из {{ total_devices }} онлайн)
             </span>
           {% else %}
             <span class="badge bg-danger-lt ms-3 px-3 py-2 d-inline-flex align-items-center" style="font-size: 0.8rem; border-radius: 9999px;">
-              <span class="status-dot bg-danger me-2"></span> Шлюз Офлайн
+              <span class="status-dot bg-danger me-2"></span> Все устройства офлайн
             </span>
           {% endif %}
         </h2>
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
-          <a href="/admin/abusers" class="btn btn-outline-danger d-none d-sm-inline-block">
-            <i class="fa-solid fa-user-shield me-2"></i> Проверить абузеров
+          <a href="/admin/abusers" class="btn btn-outline-danger">
+            <i class="fa-solid fa-user-shield me-2"></i> Анализ абузеров
+          </a>
+          <a href="/admin/device/list" class="btn btn-outline-primary">
+            <i class="fa-solid fa-mobile-screen-button me-2"></i> Управление пулом
           </a>
           <a href="/docs" target="_blank" class="btn btn-primary d-none d-sm-inline-block">
             <i class="fa-solid fa-code me-2"></i> Swagger API
@@ -46,7 +49,7 @@
             <i class="fa-solid fa-bolt fs-2"></i>
           </span>
           <div>
-            <div class="text-muted small fw-medium">Сегодня</div>
+            <div class="text-muted small fw-medium">Сегодня (МСК)</div>
             <div class="h2 mb-0 fw-bold text-dark">{{ tasks_today }}</div>
           </div>
         </div>
@@ -107,7 +110,7 @@
           </span>
           <div>
             <div class="text-muted small fw-medium">Телефонов онлайн</div>
-            <div class="h2 mb-0 fw-bold text-dark">{{ online_devices }} / {{ devices|length }}</div>
+            <div class="h2 mb-0 fw-bold text-dark">{{ online_devices }} / {{ total_devices }}</div>
           </div>
         </div>
       </div>
@@ -129,6 +132,138 @@
     </div>
   </div>
 
+  <!-- MULTI-DEVICE POOL STATUS SECTION -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <div class="d-flex align-items-center">
+        <span class="avatar rounded-3 bg-primary-lt text-primary me-2" style="width: 32px; height: 32px;">
+          <i class="fa-solid fa-network-wired"></i>
+        </span>
+        <div>
+          <h3 class="card-title mb-0 fw-bold">Пул GSM-шлюзов и ротация нагрузки</h3>
+          <div class="text-muted small">Входящие SMS автоматически чередуются между всеми активными аппаратами (Round-Robin)</div>
+        </div>
+      </div>
+      <div>
+        <a href="/admin/device/create" class="btn btn-sm btn-primary">
+          <i class="fa-solid fa-plus me-1"></i> Добавить телефон
+        </a>
+      </div>
+    </div>
+    <div class="card-body p-3">
+      <div class="row g-3">
+        {% for dev in device_pool %}
+        <div class="col-md-6 col-lg-4 col-xl-3">
+          <div class="card h-100 p-3 border {% if dev.is_online %}border-success-subtle bg-white shadow-sm{% else %}border-light bg-light-subtle opacity-75{% endif %}" style="border-radius: 14px;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h4 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                  <i class="fa-solid fa-mobile-screen-button me-2 text-primary"></i>
+                  {{ dev.name }}
+                </h4>
+                <div class="text-muted small" style="font-size: 0.75rem;">ID: #{{ dev.id }}</div>
+              </div>
+              <div>
+                {% if dev.is_online %}
+                  <span class="badge bg-success text-white py-1 px-2 d-inline-flex align-items-center">
+                    <span class="status-dot status-dot-animated bg-white me-1"></span> В сети
+                  </span>
+                {% else %}
+                  <span class="badge bg-secondary-lt py-1 px-2">Офлайн</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Rotation Priority Indicator -->
+            <div class="mb-3">
+              {% if dev.is_next and dev.is_online %}
+                <span class="badge bg-purple-lt w-100 py-1 text-center d-block">
+                  <i class="fa-solid fa-circle-dot me-1 text-purple"></i> Следующий в очереди на отправку
+                </span>
+              {% elif dev.is_online %}
+                <span class="badge bg-blue-lt w-100 py-1 text-center d-block">
+                  <i class="fa-solid fa-check me-1"></i> Готов к отправке в пуле
+                </span>
+              {% else %}
+                <span class="badge bg-secondary-lt w-100 py-1 text-center d-block text-muted">
+                  <i class="fa-solid fa-pause me-1"></i> Ожидает подключения приложения
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- Battery & Power status -->
+            <div class="mb-3 p-2 rounded-3 bg-light d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                {% if dev.battery_level is not none %}
+                  {% if dev.battery_level >= 50 %}
+                    <i class="fa-solid fa-battery-full text-success fs-3 me-2"></i>
+                  {% elif dev.battery_level >= 20 %}
+                    <i class="fa-solid fa-battery-half text-warning fs-3 me-2"></i>
+                  {% else %}
+                    <i class="fa-solid fa-battery-quarter text-danger fs-3 me-2"></i>
+                  {% endif %}
+                  <div>
+                    <div class="fw-bold fs-4 mb-0">{{ dev.battery_level }}%</div>
+                    <div class="text-muted" style="font-size: 0.7rem;">
+                      {% if dev.is_charging %}
+                        <span class="text-warning fw-semibold"><i class="fa-solid fa-bolt"></i> На зарядке</span>
+                      {% else %}
+                        От аккумулятора
+                      {% endif %}
+                    </div>
+                  </div>
+                {% else %}
+                  <i class="fa-solid fa-battery-slash text-muted fs-3 me-2"></i>
+                  <span class="text-muted small">Нет данных</span>
+                {% endif %}
+              </div>
+              <div class="text-end">
+                <div class="text-muted" style="font-size: 0.7rem;">Пинг (МСК):</div>
+                <div class="small fw-semibold text-dark">{{ dev.last_ping_msk }}</div>
+              </div>
+            </div>
+
+            <!-- Stats Grid for this device -->
+            <div class="row g-2 text-center mb-3">
+              <div class="col-4">
+                <div class="p-2 rounded-2 border bg-white">
+                  <div class="h3 mb-0 fw-bold text-primary">{{ dev.sent_today }}</div>
+                  <div class="text-muted" style="font-size: 0.65rem;">Сегодня</div>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2 rounded-2 border bg-white">
+                  <div class="h3 mb-0 fw-bold text-dark">{{ dev.sent_7d }}</div>
+                  <div class="text-muted" style="font-size: 0.65rem;">7 дней</div>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2 rounded-2 border bg-white">
+                  <div class="h3 mb-0 fw-bold text-success">{{ dev.total_sent }}</div>
+                  <div class="text-muted" style="font-size: 0.65rem;">Всего</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Token snippet with copy button -->
+            <div class="mt-auto pt-2 border-top">
+              <div class="d-flex justify-content-between align-items-center">
+                <code class="small text-truncate me-2" style="max-width: 150px; font-size: 0.72rem;" title="{{ dev.token }}">
+                  {{ dev.token }}
+                </code>
+                <button class="btn btn-sm btn-ghost-primary px-2 py-1" onclick="navigator.clipboard.writeText('{{ dev.token }}'); alert('Токен скопирован в буфер!');" title="Скопировать токен">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
   <div class="row row-cards">
     <!-- Abusers Section (Top suspicious numbers in 7 days) -->
     <div class="col-lg-6 mb-4">
@@ -136,7 +271,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center">
             <i class="fa-solid fa-triangle-exclamation text-warning fs-3 me-2"></i>
-            <span class="h3 mb-0">Повторные запросы за 7 дней (Абузеры)</span>
+            <span class="h3 mb-0 fw-bold">Повторные запросы за 7 дней (Абузеры)</span>
           </div>
           <a href="/admin/abusers" class="text-primary small fw-semibold text-decoration-none">
             Вся аналитика &rarr;
@@ -147,7 +282,7 @@
             <thead>
               <tr>
                 <th>Номер</th>
-                <th>Запросов (7д)</th>
+                <th class="text-center">Запросов (7д)</th>
                 <th>Уровень риска</th>
                 <th>Статус</th>
                 <th class="text-end">Действие</th>
@@ -159,7 +294,7 @@
                 {% set is_blocked = (r.phone_number in blocked_numbers) %}
                 <tr>
                   <td class="fw-bold text-dark">{{ r.phone_number }}</td>
-                  <td>
+                  <td class="text-center">
                     <span class="badge bg-primary-lt px-2 py-1 fs-4">{{ r.count_7d }}</span>
                   </td>
                   <td>
@@ -208,13 +343,13 @@
       </div>
     </div>
 
-    <!-- Recent SMS Activity -->
+    <!-- Recent SMS Activity (with sender device column!) -->
     <div class="col-lg-6 mb-4">
       <div class="card h-100 shadow-sm border-0">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center">
             <i class="fa-solid fa-clock-rotate-left text-primary fs-3 me-2"></i>
-            <span class="h3 mb-0">Последние SMS в шлюзе</span>
+            <span class="h3 mb-0 fw-bold">Последние SMS в шлюзе</span>
           </div>
           <a href="{{ url_for('admin:list', identity='sms-task') }}" class="text-primary small fw-semibold text-decoration-none">
             Все сообщения &rarr;
@@ -225,22 +360,31 @@
             <thead>
               <tr>
                 <th>Номер</th>
-                <th>Сообщение</th>
+                <th>Устройство</th>
                 <th>Статус</th>
-                <th>Время</th>
+                <th class="text-end">Время (МСК)</th>
               </tr>
             </thead>
             <tbody>
               {% if recent_tasks %}
                 {% for t in recent_tasks %}
                 <tr>
-                  <td class="fw-semibold">{{ t.phone_number }}</td>
-                  <td class="text-muted text-truncate" style="max-width: 200px;">
-                    {{ t.message }}
+                  <td>
+                    <div class="fw-bold text-dark">{{ t.phone_number }}</div>
+                    <div class="text-muted text-truncate small" style="max-width: 180px;">{{ t.message }}</div>
+                  </td>
+                  <td>
+                    {% if t.device %}
+                      <span class="badge bg-purple-lt px-2 py-1 d-inline-flex align-items-center">
+                        <i class="fa-solid fa-mobile-screen me-1 text-purple"></i> {{ t.device.name }}
+                      </span>
+                    {% else %}
+                      <span class="text-muted small">—</span>
+                    {% endif %}
                   </td>
                   <td>
                     {% if t.status == 'DELIVERED' %}
-                      <span class="badge bg-success-lt">DELIVERED</span>
+                      <span class="badge bg-success text-white">DELIVERED</span>
                     {% elif t.status == 'SENT' %}
                       <span class="badge bg-blue-lt">SENT</span>
                     {% elif t.status == 'EXPIRED' %}
@@ -251,7 +395,7 @@
                       <span class="badge bg-secondary-lt">{{ t.status }}</span>
                     {% endif %}
                   </td>
-                  <td class="text-muted small">
+                  <td class="text-muted small text-end">
                     {{ t.created_at_msk }}
                   </td>
                 </tr>

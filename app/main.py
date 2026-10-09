@@ -9,6 +9,7 @@ from starlette.responses import RedirectResponse, Response
 from sqladmin import Admin
 from sqladmin.authentication import login_required
 from sqlalchemy import select, func, desc
+from sqlalchemy.orm import selectinload
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
@@ -17,7 +18,7 @@ from app.config import settings
 from app.database import init_db, engine, AsyncSessionLocal
 from app.seed import seed_initial_data
 from app.auth.admin_auth import admin_auth
-from app.core.timezone import now_msk, to_msk, format_time_msk
+from app.core.timezone import now_msk, to_msk, format_time_msk, format_datetime_msk
 from app.models.sms_task import SmsTask, SmsStatus
 from app.models.device import Device
 from app.models.blacklisted_phone import BlacklistedPhone
@@ -74,18 +75,54 @@ class SMSGatewayAdmin(Admin):
             delivered_count = delivered_res.scalar() or 0
             delivery_rate = round((delivered_count / total_tasks * 100), 1) if total_tasks > 0 else 100.0
 
-            # 5. Devices
-            devices_res = await session.execute(select(Device).where(Device.is_active == True))
+            # 5. Devices & Multi-Device Pool Status
+            devices_res = await session.execute(select(Device).where(Device.is_active == True).order_by(Device.id.asc()))
             devices = devices_res.scalars().all()
+
+            # Per-device today & 7d counts
+            today_dev_res = await session.execute(
+                select(SmsTask.device_id, func.count(SmsTask.id))
+                .where(SmsTask.created_at >= today_start_utc)
+                .group_by(SmsTask.device_id)
+            )
+            today_dev_map = dict(today_dev_res.all())
+
+            sevend_dev_res = await session.execute(
+                select(SmsTask.device_id, func.count(SmsTask.id))
+                .where(SmsTask.created_at >= cutoff_7d)
+                .group_by(SmsTask.device_id)
+            )
+            sevend_dev_map = dict(sevend_dev_res.all())
+
             now_utc = datetime.now(timezone.utc)
+            next_device_id = manager.get_next_online_device_id()
+
+            device_pool = []
+            online_count = 0
             for d in devices:
                 is_connected = (d.id in manager.active_connections)
                 recent_ping = False
                 if d.last_ping_at:
                     lpa = d.last_ping_at if d.last_ping_at.tzinfo else d.last_ping_at.replace(tzinfo=timezone.utc)
                     recent_ping = (now_utc - lpa).total_seconds() < 60
-                d.is_online = is_connected or (d.is_online and recent_ping)
-            online_devices = sum(1 for d in devices if d.is_online)
+                d_online = is_connected or (d.is_online and recent_ping)
+                if d_online:
+                    online_count += 1
+
+                device_pool.append({
+                    "id": d.id,
+                    "name": d.name,
+                    "token": d.token,
+                    "is_online": d_online,
+                    "is_next": (d.id == next_device_id),
+                    "battery_level": d.battery_level,
+                    "is_charging": d.is_charging,
+                    "sim_count": d.sim_count,
+                    "total_sent": d.total_sent_count,
+                    "sent_today": today_dev_map.get(d.id, 0),
+                    "sent_7d": sevend_dev_map.get(d.id, 0),
+                    "last_ping_msk": format_datetime_msk(d.last_ping_at, "%d.%m %H:%M:%S") if d.last_ping_at else "—"
+                })
 
             # 6. Blocked count
             blocked_res = await session.execute(select(func.count(BlacklistedPhone.id)).where(BlacklistedPhone.is_active == True))
@@ -111,8 +148,13 @@ class SMSGatewayAdmin(Admin):
             bl_res = await session.execute(select(BlacklistedPhone.phone_number).where(BlacklistedPhone.is_active == True))
             blocked_numbers = set(bl_res.scalars().all())
 
-            # 8. Recent 7 tasks formatted in Moscow time (MSK)
-            recent_res = await session.execute(select(SmsTask).order_by(SmsTask.created_at.desc()).limit(7))
+            # 8. Recent 8 tasks formatted in Moscow time (MSK) with device info
+            recent_res = await session.execute(
+                select(SmsTask)
+                .options(selectinload(SmsTask.device))
+                .order_by(SmsTask.created_at.desc())
+                .limit(8)
+            )
             recent_tasks = recent_res.scalars().all()
             for t in recent_tasks:
                 t.created_at_msk = format_time_msk(t.created_at)
@@ -124,8 +166,9 @@ class SMSGatewayAdmin(Admin):
                 "tasks_7d": tasks_7d,
                 "delivered_count": delivered_count,
                 "delivery_rate": delivery_rate,
-                "devices": devices,
-                "online_devices": online_devices,
+                "device_pool": device_pool,
+                "online_devices": online_count,
+                "total_devices": len(device_pool),
                 "blacklisted_count": blacklisted_count,
                 "top_abusers": top_abusers,
                 "blocked_numbers": blocked_numbers,
