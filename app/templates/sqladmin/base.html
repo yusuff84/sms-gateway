@@ -37,8 +37,9 @@
       --teal-primary-hover: #0f766e;
       --teal-light: #f0fdfa;
       --teal-border: #99f6e4;
-      --black-obsidian: #09090b;
-      --black-card-border: #f1f5f9;
+      --color-black: #09090b;
+      --color-white: #ffffff;
+      --color-border: #f1f5f9;
       --tblr-primary: #0d9488;
       --tblr-primary-rgb: 13, 148, 136;
       --tblr-body-bg: #f8fafc;
@@ -55,16 +56,16 @@
       letter-spacing: -0.015em;
     }
 
-    /* Minimalist Obsidian Black Sidebar with Teal Accents */
+    /* Minimalist Unified White Sidebar (same clean aesthetic as the main dashboard) */
     .navbar-vertical {
-      background: #09090b !important;
-      border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+      background: #ffffff !important;
+      border-right: 1px solid #f1f5f9 !important;
+      box-shadow: 2px 0 16px rgba(0, 0, 0, 0.02);
     }
 
     .navbar-vertical .navbar-brand {
       padding: 1.5rem 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid #f1f5f9;
       margin-bottom: 0.75rem;
     }
 
@@ -72,27 +73,27 @@
       font-size: 1.2rem;
       font-weight: 800;
       letter-spacing: -0.03em;
-      color: #ffffff;
+      color: #09090b;
       margin: 0;
     }
 
-    .navbar-vertical .navbar-brand h3 span.brand-dot {
-      color: #2dd4bf;
+    .navbar-vertical .navbar-nav {
+      padding: 0 4px;
     }
 
     .navbar-vertical .nav-link {
-      border-radius: 12px;
-      margin: 3px 10px;
-      padding: 10px 14px;
-      font-weight: 500;
+      border-radius: 9999px;
+      margin: 3px 8px;
+      padding: 10px 16px;
+      font-weight: 600;
       font-size: 0.875rem;
-      color: #94a3b8 !important;
+      color: #0f172a !important;
       transition: all 0.15s ease-in-out;
     }
 
     .navbar-vertical .nav-link:hover {
-      color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.06);
+      color: #0d9488 !important;
+      background: #f0fdfa !important;
       transform: translateX(2px);
     }
 
@@ -105,8 +106,19 @@
 
     .navbar-vertical .nav-link-icon {
       margin-right: 12px;
-      font-size: 1rem;
-      opacity: 0.9;
+      font-size: 1.05rem;
+      color: #0d9488;
+      transition: color 0.15s ease;
+    }
+
+    .navbar-vertical .nav-item.active .nav-link .nav-link-icon,
+    .navbar-vertical .nav-link.active .nav-link-icon {
+      color: #ffffff !important;
+    }
+
+    .navbar-vertical .nav-item.active .nav-link .nav-link-icon i,
+    .navbar-vertical .nav-link.active .nav-link-icon i {
+      color: #ffffff !important;
     }
 
     /* Minimalist Rounded White Cards */
