@@ -22,5 +22,5 @@ class BlacklistedPhone(Base):
         return f"<BlacklistedPhone {self.phone_number} (active={self.is_active})>"
 
     def __str__(self) -> str:
-        status = "🚫 Заблокирован" if self.is_active else "⚪ Разблокирован"
-        return f"{self.phone_number} [{status}]"
+        status = "Заблокирован" if self.is_active else "Разблокирован"
+        return f"{self.phone_number} ({status})"

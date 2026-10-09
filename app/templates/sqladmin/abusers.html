@@ -7,18 +7,18 @@
   <div class="page-header d-print-none mb-4">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <div class="page-pretitle text-muted text-uppercase fw-semibold" style="letter-spacing: 0.05em; font-size: 0.75rem;">
+        <div class="page-pretitle text-muted text-uppercase fw-semibold" style="letter-spacing: 0.05em; font-size: 0.72rem;">
           Мониторинг безопасности
         </div>
-        <h2 class="page-title mt-1">
+        <h2 class="page-title mt-1 d-flex align-items-center">
           <i class="fa-solid fa-user-shield text-danger me-2"></i> Анализ абузеров и повторных запросов
         </h2>
-        <div class="text-muted mt-1">
+        <div class="text-muted small mt-1">
           Автоматический подсчет и выявление номеров с подозрительно частыми запросами кодов за последние 7 дней.
         </div>
       </div>
       <div class="col-auto ms-auto d-print-none">
-        <a href="{{ url_for('admin:list', identity='blacklisted-phone') }}" class="btn btn-outline-danger">
+        <a href="{{ url_for('admin:list', identity='blacklisted-phone') }}" class="btn btn-outline-danger btn-sm">
           <i class="fa-solid fa-ban me-2"></i> Черный список
         </a>
       </div>
@@ -32,16 +32,16 @@
         <!-- Filter Tabs -->
         <div class="col-md-7">
           <div class="nav nav-pills">
-            <a href="?filter=abusers{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'abusers' %}active{% endif %}">
+            <a href="?filter=abusers{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link btn-sm {% if filter_mode == 'abusers' %}active{% endif %}">
               <i class="fa-solid fa-triangle-exclamation me-1"></i> Повторные запросы (2+)
             </a>
-            <a href="?filter=critical{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'critical' %}active{% endif %}">
-              <i class="fa-solid fa-fire text-danger me-1"></i> Критический абуз (8+)
+            <a href="?filter=critical{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link btn-sm {% if filter_mode == 'critical' %}active{% endif %}">
+              <i class="fa-solid fa-shield-virus text-danger me-1"></i> Критический абуз (8+)
             </a>
-            <a href="?filter=blocked{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'blocked' %}active{% endif %}">
+            <a href="?filter=blocked{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link btn-sm {% if filter_mode == 'blocked' %}active{% endif %}">
               <i class="fa-solid fa-ban me-1"></i> Заблокированные
             </a>
-            <a href="?filter=all{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if filter_mode == 'all' %}active{% endif %}">
+            <a href="?filter=all{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link btn-sm {% if filter_mode == 'all' %}active{% endif %}">
               Все номера
             </a>
           </div>
@@ -54,7 +54,7 @@
             <span class="input-icon-addon">
               <i class="fa-solid fa-magnifying-glass text-muted"></i>
             </span>
-            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Поиск по номеру телефона...">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Поиск по номеру телефона...">
           </form>
         </div>
       </div>
@@ -63,8 +63,8 @@
 
   <!-- Abusers Table -->
   <div class="card shadow-sm border-0">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h3 class="card-title mb-0">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <h3 class="card-title mb-0 fw-bold">
         Найдено номеров: <span class="badge bg-primary text-white ms-1">{{ total_count }}</span>
       </h3>
     </div>
@@ -87,7 +87,7 @@
             {% for item in items %}
             <tr>
               <td>
-                <span class="fw-bold text-dark fs-3">{{ item.phone_number }}</span>
+                <span class="fw-bold text-dark fs-3 font-monospace">{{ item.phone_number }}</span>
               </td>
               <td class="text-center">
                 {% if item.count_7d >= 8 %}
@@ -115,19 +115,19 @@
               </td>
               <td>
                 {% if item.risk == 'critical' %}
-                  <span class="badge bg-danger text-white">🚨 Критический</span>
+                  <span class="badge bg-danger text-white"><i class="fa-solid fa-shield-virus me-1"></i>Критический</span>
                 {% elif item.risk == 'suspicious' %}
-                  <span class="badge bg-warning text-dark">⚠️ Подозрительный</span>
+                  <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Подозрительный</span>
                 {% elif item.risk == 'repeat' %}
-                  <span class="badge bg-info-lt">🟡 Повторный</span>
+                  <span class="badge bg-info-lt"><i class="fa-solid fa-clock-rotate-left me-1"></i>Повторный</span>
                 {% else %}
-                  <span class="badge bg-success-lt">🟢 Норма</span>
+                  <span class="badge bg-success-lt"><i class="fa-solid fa-check me-1"></i>Обычный</span>
                 {% endif %}
               </td>
               <td>
                 {% if item.is_blocked %}
                   <span class="badge bg-danger-lt d-inline-flex align-items-center">
-                    <i class="fa-solid fa-lock me-1"></i> Заблокирован
+                    <i class="fa-solid fa-ban me-1"></i> Заблокирован
                   </span>
                   {% if item.block_reason %}
                     <div class="text-muted small text-truncate mt-1" style="max-width: 160px;" title="{{ item.block_reason }}">
@@ -153,7 +153,7 @@
                     <input type="hidden" name="phone_number" value="{{ item.phone_number }}">
                     <input type="hidden" name="reason" value="Частые повторные запросы кодов за 7 дней ({{ item.count_7d }} раз)">
                     <button type="submit" class="btn btn-sm btn-danger">
-                      <i class="fa-solid fa-ban me-1"></i> Заблокировать
+                      <i class="fa-solid fa-ban me-1"></i> Блок
                     </button>
                   </form>
                 {% endif %}

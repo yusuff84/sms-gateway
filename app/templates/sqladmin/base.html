@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   {% endblock %}
 
-  <!-- Google Font: Inter (Modern Web Typography) -->
+  <!-- Google Font: Inter (Crisp Modern Typography) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,26 +44,29 @@
     body {
       font-family: var(--tblr-font-sans-serif);
       background-color: #f8fafc;
-      color: #1e293b;
+      color: #0f172a;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.011em;
     }
 
     /* Modern Dark Sidebar */
     .navbar-vertical {
-      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+      background: #090d16 !important;
       border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-      box-shadow: 4px 0 24px 0 rgba(0, 0, 0, 0.06);
+      box-shadow: 4px 0 24px 0 rgba(0, 0, 0, 0.05);
     }
 
     .navbar-vertical .navbar-brand {
-      padding: 1.5rem 1rem;
+      padding: 1.5rem 1.25rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .navbar-vertical .navbar-brand h3 {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
+      letter-spacing: -0.02em;
       background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -72,60 +75,60 @@
 
     .navbar-vertical .nav-link {
       border-radius: 10px;
-      margin: 2px 8px;
+      margin: 3px 10px;
       padding: 10px 14px;
       font-weight: 500;
+      font-size: 0.875rem;
       color: #94a3b8 !important;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease-in-out;
     }
 
     .navbar-vertical .nav-link:hover {
-      color: #ffffff !important;
+      color: #f8fafc !important;
       background: rgba(255, 255, 255, 0.06);
-      transform: translateX(3px);
+      transform: translateX(2px);
     }
 
     .navbar-vertical .nav-item.active .nav-link,
     .navbar-vertical .nav-link.active {
       color: #ffffff !important;
-      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
     .navbar-vertical .nav-link-icon {
-      margin-right: 10px;
+      margin-right: 12px;
+      font-size: 1rem;
       opacity: 0.9;
     }
 
-    /* Modern Elevated Cards */
+    /* Cards */
     .card {
       background: #ffffff;
       border: 1px solid #e2e8f0 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border-radius: 14px !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 4px 14px -2px rgba(0, 0, 0, 0.03);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
     .card:hover {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.06);
     }
 
     .card-header {
       background: transparent;
       border-bottom: 1px solid #f1f5f9;
-      padding: 1.25rem 1.5rem;
+      padding: 1rem 1.25rem;
       font-weight: 600;
+      font-size: 0.95rem;
     }
 
-    /* Modern Tables */
-    .table {
-      margin-bottom: 0;
-    }
-
+    /* Tables */
     .table thead th {
       background: #f8fafc;
       color: #64748b;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -134,20 +137,20 @@
     }
 
     .table tbody td {
-      padding: 14px 16px;
+      padding: 13px 16px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
       color: #334155;
-      font-size: 0.875rem;
+      font-size: 0.85rem;
     }
 
     .table tbody tr:hover td {
       background-color: #f8fafc;
     }
 
-    /* Modern Pill Badges */
+    /* Badges */
     .badge {
-      padding: 5px 10px;
+      padding: 4px 9px;
       border-radius: 9999px;
       font-weight: 600;
       font-size: 0.75rem;
@@ -158,39 +161,40 @@
     .form-control, .form-select {
       border: 1px solid #cbd5e1;
       border-radius: 10px;
-      padding: 10px 14px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      padding: 9px 13px;
+      font-size: 0.875rem;
+      transition: all 0.15s ease;
     }
 
     .form-control:focus, .form-select:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
     /* Buttons */
     .btn {
       border-radius: 10px;
-      padding: 8px 16px;
+      padding: 7px 15px;
       font-weight: 600;
-      transition: all 0.2s ease;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #0b57d0 0%, #1d4ed8 100%);
-      border: none;
-      box-shadow: 0 2px 8px rgba(11, 87, 208, 0.25);
+      background: #0b57d0;
+      border-color: #0b57d0;
     }
 
     .btn-primary:hover {
-      background: linear-gradient(135deg, #0842a0 0%, #1e40af 100%);
-      box-shadow: 0 4px 14px rgba(11, 87, 208, 0.35);
-      transform: translateY(-1px);
+      background: #0842a0;
+      border-color: #0842a0;
     }
 
     /* Page Titles */
     .page-title {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
+      letter-spacing: -0.02em;
       color: #0f172a;
     }
   </style>

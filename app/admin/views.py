@@ -24,17 +24,20 @@ class BaseAdminModelView(ModelView):
 def format_device_online_badge(model: Device, attribute: str) -> Markup:
     if model.is_online:
         return Markup(
-            '<span class="badge bg-success text-white py-1 px-2 d-inline-flex align-items-center">'
-            '<span class="status-dot status-dot-animated bg-white me-1"></span>В сети</span>'
+            '<span class="badge bg-success-lt py-1 px-2 d-inline-flex align-items-center">'
+            '<span class="status-dot status-dot-animated bg-success me-1"></span>В сети</span>'
         )
-    return Markup('<span class="badge bg-secondary-lt py-1 px-2">⚪ Офлайн</span>')
+    return Markup(
+        '<span class="badge bg-secondary-lt py-1 px-2 d-inline-flex align-items-center">'
+        '<i class="fa-solid fa-circle text-muted me-1" style="font-size: 0.5rem;"></i>Офлайн</span>'
+    )
 
 
 def format_device_battery_badge(model: Device, attribute: str) -> Markup:
     if model.battery_level is None:
         return Markup('<span class="text-muted">—</span>')
     level = model.battery_level
-    charging_icon = ' <i class="fa-solid fa-bolt text-warning" title="Заряжается"></i>' if model.is_charging else ''
+    charging_icon = ' <i class="fa-solid fa-bolt text-warning ms-1" title="На зарядке"></i>' if model.is_charging else ''
 
     if level >= 60:
         badge_cls = "bg-success-lt"
@@ -52,7 +55,7 @@ def format_device_battery_badge(model: Device, attribute: str) -> Markup:
 def format_sms_status_badge(model: SmsTask, attribute: str) -> Markup:
     st = model.status
     if st == SmsStatus.DELIVERED:
-        return Markup('<span class="badge bg-success text-white px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>DELIVERED</span>')
+        return Markup('<span class="badge bg-success-lt px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>DELIVERED</span>')
     elif st == SmsStatus.SENT:
         return Markup('<span class="badge bg-blue-lt px-2 py-1"><i class="fa-solid fa-paper-plane me-1"></i>SENT</span>')
     elif st == SmsStatus.SENDING or st == SmsStatus.QUEUED:
@@ -75,12 +78,12 @@ def format_task_device_badge(model: SmsTask, attribute: str) -> Markup:
 
 
 def format_task_phone_number(model: SmsTask, attribute: str) -> Markup:
-    return Markup(f'<span class="fw-bold text-dark">{model.phone_number}</span>')
+    return Markup(f'<span class="fw-bold text-dark font-monospace">{model.phone_number}</span>')
 
 
 def format_task_sim_slot(model: SmsTask, attribute: str) -> Markup:
     slot = model.sim_slot or 1
-    return Markup(f'<span class="badge bg-azure-lt px-2 py-1">SIM {slot}</span>')
+    return Markup(f'<span class="badge bg-azure-lt px-2 py-1"><i class="fa-solid fa-sim-card me-1"></i>SIM {slot}</span>')
 
 
 class ApiKeyAdmin(BaseAdminModelView, model=ApiKey):
@@ -159,7 +162,7 @@ class BlacklistedPhoneAdmin(BaseAdminModelView, model=BlacklistedPhone):
         BlacklistedPhone.updated_at,
     ]
     column_formatters = {
-        BlacklistedPhone.is_active: lambda m, a: Markup('<span class="badge bg-danger-lt">🚫 Заблокирован</span>') if m.is_active else Markup('<span class="badge bg-success-lt">⚪ Разблокирован</span>')
+        BlacklistedPhone.is_active: lambda m, a: Markup('<span class="badge bg-danger-lt"><i class="fa-solid fa-shield-halved me-1"></i>Заблокирован</span>') if m.is_active else Markup('<span class="badge bg-success-lt"><i class="fa-solid fa-check me-1"></i>Разблокирован</span>')
     }
     column_searchable_list = [BlacklistedPhone.phone_number, BlacklistedPhone.reason]
     column_sortable_list = [BlacklistedPhone.id, BlacklistedPhone.created_at, BlacklistedPhone.is_active]

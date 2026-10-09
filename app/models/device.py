@@ -36,5 +36,5 @@ class Device(Base):
         return f"<Device {self.name} (online={self.is_online})>"
 
     def __str__(self) -> str:
-        status = "🟢 Online" if self.is_online else "🔴 Offline"
-        return f"{self.name} [{status}]"
+        status = "В сети" if self.is_online else "Офлайн"
+        return f"{self.name} ({status})"

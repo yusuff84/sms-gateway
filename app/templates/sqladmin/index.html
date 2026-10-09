@@ -7,17 +7,17 @@
   <div class="page-header d-print-none mb-4">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <div class="page-pretitle text-muted text-uppercase fw-semibold" style="letter-spacing: 0.05em; font-size: 0.75rem;">
+        <div class="page-pretitle text-muted text-uppercase fw-semibold" style="letter-spacing: 0.05em; font-size: 0.72rem;">
           Центр управления шлюзом
         </div>
         <h2 class="page-title mt-1 d-flex align-items-center">
-          Обзор системы и Балансировка
+          Обзор системы и балансировка
           {% if online_devices > 0 %}
-            <span class="badge bg-green-lt ms-3 px-3 py-2 d-inline-flex align-items-center" style="font-size: 0.8rem; border-radius: 9999px;">
-              <span class="status-dot status-dot-animated bg-success me-2"></span> GSM Шлюз Активен ({{ online_devices }} из {{ total_devices }} онлайн)
+            <span class="badge bg-success-lt ms-3 px-3 py-1 d-inline-flex align-items-center fw-semibold" style="font-size: 0.8rem; border-radius: 9999px;">
+              <span class="status-dot status-dot-animated bg-success me-2"></span> GSM Шлюз Активен ({{ online_devices }} из {{ total_devices }} в сети)
             </span>
           {% else %}
-            <span class="badge bg-danger-lt ms-3 px-3 py-2 d-inline-flex align-items-center" style="font-size: 0.8rem; border-radius: 9999px;">
+            <span class="badge bg-danger-lt ms-3 px-3 py-1 d-inline-flex align-items-center fw-semibold" style="font-size: 0.8rem; border-radius: 9999px;">
               <span class="status-dot bg-danger me-2"></span> Все устройства офлайн
             </span>
           {% endif %}
@@ -25,13 +25,13 @@
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
-          <a href="/admin/abusers" class="btn btn-outline-danger">
+          <a href="/admin/abusers" class="btn btn-outline-danger btn-sm">
             <i class="fa-solid fa-user-shield me-2"></i> Анализ абузеров
           </a>
-          <a href="/admin/device/list" class="btn btn-outline-primary">
+          <a href="/admin/device/list" class="btn btn-outline-primary btn-sm">
             <i class="fa-solid fa-mobile-screen-button me-2"></i> Управление пулом
           </a>
-          <a href="/docs" target="_blank" class="btn btn-primary d-none d-sm-inline-block">
+          <a href="/docs" target="_blank" class="btn btn-primary btn-sm d-none d-sm-inline-block">
             <i class="fa-solid fa-code me-2"></i> Swagger API
           </a>
         </div>
@@ -136,7 +136,7 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-header d-flex justify-content-between align-items-center py-3">
       <div class="d-flex align-items-center">
-        <span class="avatar rounded-3 bg-primary-lt text-primary me-2" style="width: 32px; height: 32px;">
+        <span class="avatar rounded-3 bg-primary-lt text-primary me-3" style="width: 36px; height: 36px;">
           <i class="fa-solid fa-network-wired"></i>
         </span>
         <div>
@@ -161,15 +161,17 @@
                   <i class="fa-solid fa-mobile-screen-button me-2 text-primary"></i>
                   {{ dev.name }}
                 </h4>
-                <div class="text-muted small" style="font-size: 0.75rem;">ID: #{{ dev.id }}</div>
+                <div class="text-muted small font-monospace" style="font-size: 0.72rem;">ID #{{ dev.id }}</div>
               </div>
               <div>
                 {% if dev.is_online %}
-                  <span class="badge bg-success text-white py-1 px-2 d-inline-flex align-items-center">
-                    <span class="status-dot status-dot-animated bg-white me-1"></span> В сети
+                  <span class="badge bg-success-lt py-1 px-2 d-inline-flex align-items-center">
+                    <span class="status-dot status-dot-animated bg-success me-1"></span> В сети
                   </span>
                 {% else %}
-                  <span class="badge bg-secondary-lt py-1 px-2">Офлайн</span>
+                  <span class="badge bg-secondary-lt py-1 px-2 d-inline-flex align-items-center">
+                    <i class="fa-solid fa-circle text-muted me-1" style="font-size: 0.45rem;"></i> Офлайн
+                  </span>
                 {% endif %}
               </div>
             </div>
@@ -178,49 +180,55 @@
             <div class="mb-3">
               {% if dev.is_next and dev.is_online %}
                 <span class="badge bg-purple-lt w-100 py-1 text-center d-block">
-                  <i class="fa-solid fa-circle-dot me-1 text-purple"></i> Следующий в очереди на отправку
+                  <i class="fa-solid fa-arrows-rotate me-1 text-purple"></i> Следующий в очереди на отправку
                 </span>
               {% elif dev.is_online %}
                 <span class="badge bg-blue-lt w-100 py-1 text-center d-block">
-                  <i class="fa-solid fa-check me-1"></i> Готов к отправке в пуле
+                  <i class="fa-solid fa-circle-check me-1"></i> Готов к отправке в пуле
                 </span>
               {% else %}
                 <span class="badge bg-secondary-lt w-100 py-1 text-center d-block text-muted">
-                  <i class="fa-solid fa-pause me-1"></i> Ожидает подключения приложения
+                  <i class="fa-solid fa-circle-pause me-1"></i> Ожидает подключения приложения
                 </span>
               {% endif %}
             </div>
 
             <!-- Battery & Power status -->
-            <div class="mb-3 p-2 rounded-3 bg-light d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center">
-                {% if dev.battery_level is not none %}
-                  {% if dev.battery_level >= 50 %}
-                    <i class="fa-solid fa-battery-full text-success fs-3 me-2"></i>
-                  {% elif dev.battery_level >= 20 %}
-                    <i class="fa-solid fa-battery-half text-warning fs-3 me-2"></i>
-                  {% else %}
-                    <i class="fa-solid fa-battery-quarter text-danger fs-3 me-2"></i>
-                  {% endif %}
-                  <div>
-                    <div class="fw-bold fs-4 mb-0">{{ dev.battery_level }}%</div>
-                    <div class="text-muted" style="font-size: 0.7rem;">
-                      {% if dev.is_charging %}
-                        <span class="text-warning fw-semibold"><i class="fa-solid fa-bolt"></i> На зарядке</span>
-                      {% else %}
-                        От аккумулятора
-                      {% endif %}
+            <div class="mb-3 p-2 rounded-3 bg-light d-flex flex-column gap-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  {% if dev.battery_level is not none %}
+                    {% if dev.battery_level >= 50 %}
+                      <i class="fa-solid fa-battery-full text-success fs-3 me-2"></i>
+                    {% elif dev.battery_level >= 20 %}
+                      <i class="fa-solid fa-battery-half text-warning fs-3 me-2"></i>
+                    {% else %}
+                      <i class="fa-solid fa-battery-quarter text-danger fs-3 me-2"></i>
+                    {% endif %}
+                    <div>
+                      <div class="fw-bold fs-4 mb-0 d-inline-flex align-items-center">
+                        {{ dev.battery_level }}%
+                        {% if dev.is_charging %}
+                          <i class="fa-solid fa-bolt text-warning ms-1" title="На зарядке"></i>
+                        {% endif %}
+                      </div>
                     </div>
-                  </div>
-                {% else %}
-                  <i class="fa-solid fa-battery-slash text-muted fs-3 me-2"></i>
-                  <span class="text-muted small">Нет данных</span>
-                {% endif %}
+                  {% else %}
+                    <i class="fa-solid fa-battery-slash text-muted fs-3 me-2"></i>
+                    <span class="text-muted small">Нет данных</span>
+                  {% endif %}
+                </div>
+                <div class="text-end">
+                  <div class="text-muted" style="font-size: 0.68rem;">Пинг (МСК):</div>
+                  <div class="small fw-semibold text-dark">{{ dev.last_ping_msk }}</div>
+                </div>
               </div>
-              <div class="text-end">
-                <div class="text-muted" style="font-size: 0.7rem;">Пинг (МСК):</div>
-                <div class="small fw-semibold text-dark">{{ dev.last_ping_msk }}</div>
+
+              {% if dev.battery_level is not none %}
+              <div class="progress" style="height: 4px; border-radius: 2px;">
+                <div class="progress-bar {% if dev.battery_level >= 50 %}bg-success{% elif dev.battery_level >= 20 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ dev.battery_level }}%;"></div>
               </div>
+              {% endif %}
             </div>
 
             <!-- Stats Grid for this device -->
@@ -248,10 +256,10 @@
             <!-- Token snippet with copy button -->
             <div class="mt-auto pt-2 border-top">
               <div class="d-flex justify-content-between align-items-center">
-                <code class="small text-truncate me-2" style="max-width: 150px; font-size: 0.72rem;" title="{{ dev.token }}">
+                <code class="small text-truncate me-2 font-monospace" style="max-width: 150px; font-size: 0.72rem;" title="{{ dev.token }}">
                   {{ dev.token }}
                 </code>
-                <button class="btn btn-sm btn-ghost-primary px-2 py-1" onclick="navigator.clipboard.writeText('{{ dev.token }}'); alert('Токен скопирован в буфер!');" title="Скопировать токен">
+                <button class="btn btn-sm btn-ghost-primary px-2 py-1" onclick="navigator.clipboard.writeText('{{ dev.token }}');" title="Скопировать токен">
                   <i class="fa-regular fa-copy"></i>
                 </button>
               </div>
@@ -270,7 +278,7 @@
       <div class="card h-100 shadow-sm border-0">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center">
-            <i class="fa-solid fa-triangle-exclamation text-warning fs-3 me-2"></i>
+            <i class="fa-solid fa-user-shield text-danger fs-3 me-2"></i>
             <span class="h3 mb-0 fw-bold">Повторные запросы за 7 дней (Абузеры)</span>
           </div>
           <a href="/admin/abusers" class="text-primary small fw-semibold text-decoration-none">
@@ -293,37 +301,41 @@
                 {% for r in top_abusers %}
                 {% set is_blocked = (r.phone_number in blocked_numbers) %}
                 <tr>
-                  <td class="fw-bold text-dark">{{ r.phone_number }}</td>
+                  <td class="fw-bold text-dark font-monospace">{{ r.phone_number }}</td>
                   <td class="text-center">
                     <span class="badge bg-primary-lt px-2 py-1 fs-4">{{ r.count_7d }}</span>
                   </td>
                   <td>
                     {% if r.count_7d >= 8 %}
-                      <span class="badge bg-danger text-white">🚨 Критический</span>
+                      <span class="badge bg-danger text-white"><i class="fa-solid fa-shield-virus me-1"></i>Критический</span>
                     {% elif r.count_7d >= 4 %}
-                      <span class="badge bg-warning text-dark">⚠️ Подозрительный</span>
+                      <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Подозрительный</span>
                     {% else %}
-                      <span class="badge bg-info-lt">ℹ️ Повторный</span>
+                      <span class="badge bg-info-lt"><i class="fa-solid fa-clock-rotate-left me-1"></i>Повторный</span>
                     {% endif %}
                   </td>
                   <td>
                     {% if is_blocked %}
-                      <span class="badge bg-danger-lt">🚫 Заблокирован</span>
+                      <span class="badge bg-danger-lt"><i class="fa-solid fa-ban me-1"></i>Заблокирован</span>
                     {% else %}
-                      <span class="badge bg-success-lt">Активен</span>
+                      <span class="badge bg-success-lt"><i class="fa-solid fa-check me-1"></i>Активен</span>
                     {% endif %}
                   </td>
                   <td class="text-end">
                     {% if is_blocked %}
                       <form method="POST" action="/admin/abusers/unblock" class="d-inline">
                         <input type="hidden" name="phone_number" value="{{ r.phone_number }}">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">Разблок.</button>
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                          <i class="fa-solid fa-unlock me-1"></i> Разблок.
+                        </button>
                       </form>
                     {% else %}
                       <form method="POST" action="/admin/abusers/block" class="d-inline">
                         <input type="hidden" name="phone_number" value="{{ r.phone_number }}">
                         <input type="hidden" name="reason" value="Частые запросы кодов за 7 дней ({{ r.count_7d }} раз)">
-                        <button type="submit" class="btn btn-sm btn-danger">Заблокировать</button>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                          <i class="fa-solid fa-ban me-1"></i> Блок
+                        </button>
                       </form>
                     {% endif %}
                   </td>
@@ -370,7 +382,7 @@
                 {% for t in recent_tasks %}
                 <tr>
                   <td>
-                    <div class="fw-bold text-dark">{{ t.phone_number }}</div>
+                    <div class="fw-bold text-dark font-monospace">{{ t.phone_number }}</div>
                     <div class="text-muted text-truncate small" style="max-width: 180px;">{{ t.message }}</div>
                   </td>
                   <td>
@@ -384,15 +396,15 @@
                   </td>
                   <td>
                     {% if t.status == 'DELIVERED' %}
-                      <span class="badge bg-success text-white">DELIVERED</span>
+                      <span class="badge bg-success-lt px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>DELIVERED</span>
                     {% elif t.status == 'SENT' %}
-                      <span class="badge bg-blue-lt">SENT</span>
+                      <span class="badge bg-blue-lt px-2 py-1"><i class="fa-solid fa-paper-plane me-1"></i>SENT</span>
                     {% elif t.status == 'EXPIRED' %}
-                      <span class="badge bg-warning-lt">EXPIRED</span>
+                      <span class="badge bg-warning-lt px-2 py-1"><i class="fa-solid fa-hourglass-end me-1"></i>EXPIRED</span>
                     {% elif t.status == 'FAILED' %}
-                      <span class="badge bg-danger-lt">FAILED</span>
+                      <span class="badge bg-danger-lt px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>FAILED</span>
                     {% else %}
-                      <span class="badge bg-secondary-lt">{{ t.status }}</span>
+                      <span class="badge bg-secondary-lt px-2 py-1">{{ t.status }}</span>
                     {% endif %}
                   </td>
                   <td class="text-muted small text-end">
