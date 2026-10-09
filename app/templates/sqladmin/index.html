@@ -3,36 +3,37 @@
 {% block content %}
 <div class="container-xl py-4">
 
-  <!-- Header Section in Instagram Style -->
+  <!-- Header Section in Minimalist Teal & Black Style -->
   <div class="page-header d-print-none mb-4">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <div class="text-uppercase fw-bold" style="letter-spacing: 0.08em; font-size: 0.7rem; color: #737373;">
+        <div class="text-uppercase fw-bold" style="letter-spacing: 0.08em; font-size: 0.7rem; color: #64748b;">
           Центр управления шлюзом
         </div>
         <h2 class="page-title mt-1 d-flex align-items-center">
-          <span style="background: var(--ig-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SMS Gateway</span>
-          <span class="text-dark ms-2">&middot; Балансировка и Антифрод</span>
+          <span style="color: #09090b; font-weight: 800;">SMS Gateway</span>
+          <span style="color: #0d9488;" class="ms-1">.</span>
+          <span class="text-muted ms-2 fw-medium fs-3">&middot; Балансировка и мониторинг</span>
           {% if online_devices > 0 %}
-            <span class="badge badge-ig-gradient ms-3 px-3 py-1 d-inline-flex align-items-center" style="font-size: 0.78rem;">
-              <i class="fa-solid fa-bolt me-2"></i> Шлюз Активен ({{ online_devices }} из {{ total_devices }} в сети)
+            <span class="badge ms-3 px-3 py-1 d-inline-flex align-items-center fw-semibold" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px; font-size: 0.78rem;">
+              <span class="status-dot status-dot-animated me-2" style="background: #0d9488;"></span> Шлюз активен ({{ online_devices }} из {{ total_devices }} в сети)
             </span>
           {% else %}
-            <span class="badge bg-secondary-lt ms-3 px-3 py-1 d-inline-flex align-items-center" style="font-size: 0.78rem;">
-              <i class="fa-solid fa-circle-pause me-2"></i> Все устройства офлайн
+            <span class="badge ms-3 px-3 py-1 d-inline-flex align-items-center fw-semibold" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9999px; font-size: 0.78rem;">
+              <span class="status-dot bg-danger me-2"></span> Все устройства офлайн
             </span>
           {% endif %}
         </h2>
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
-          <a href="/admin/abusers" class="btn btn-outline-danger btn-sm">
+          <a href="/admin/abusers" class="btn btn-outline-danger btn-sm" style="border-radius: 9999px;">
             <i class="fa-solid fa-user-shield me-2"></i> Анализ абузеров
           </a>
-          <a href="/admin/device/list" class="btn btn-outline-primary btn-sm">
-            <i class="fa-solid fa-mobile-screen-button me-2"></i> Управление пулом
+          <a href="/admin/device/list" class="btn btn-sm" style="background: #09090b; color: #ffffff; border-radius: 9999px;">
+            <i class="fa-solid fa-mobile-screen-button me-2" style="color: #2dd4bf;"></i> Управление пулом
           </a>
-          <a href="/docs" target="_blank" class="btn btn-primary btn-sm d-none d-sm-inline-block">
+          <a href="/docs" target="_blank" class="btn btn-sm d-none d-sm-inline-block" style="background: #0d9488; color: #ffffff; border-radius: 9999px;">
             <i class="fa-solid fa-code me-2"></i> Swagger API
           </a>
         </div>
@@ -40,17 +41,15 @@
     </div>
   </div>
 
-  <!-- KPI Metric Cards Row -->
+  <!-- KPI Metric Cards Row in Minimalist Rounded Style -->
   <div class="row row-deck row-cards mb-4">
     <!-- Today -->
     <div class="col-sm-6 col-lg-2">
-      <div class="card p-3 border-0">
+      <div class="card p-3 border-0 shadow-sm" style="border-radius: 18px;">
         <div class="d-flex align-items-center">
-          <div class="story-ring-container story-ring-active me-3" style="width: 42px; height: 42px; padding: 2px;">
-            <div class="story-avatar-inner" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-bolt text-danger"></i>
-            </div>
-          </div>
+          <span class="avatar me-3" style="background: #f0fdfa; color: #0d9488; border-radius: 12px; width: 44px; height: 44px;">
+            <i class="fa-solid fa-bolt fs-2"></i>
+          </span>
           <div>
             <div class="text-muted small fw-medium">Сегодня (МСК)</div>
             <div class="h2 mb-0 fw-bold text-dark">{{ tasks_today }}</div>
@@ -61,13 +60,11 @@
 
     <!-- 7 Days -->
     <div class="col-sm-6 col-lg-2">
-      <div class="card p-3 border-0">
+      <div class="card p-3 border-0 shadow-sm" style="border-radius: 18px;">
         <div class="d-flex align-items-center">
-          <div class="story-ring-container story-ring-active me-3" style="width: 42px; height: 42px; padding: 2px;">
-            <div class="story-avatar-inner" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-calendar-week text-primary"></i>
-            </div>
-          </div>
+          <span class="avatar me-3" style="background: #f8fafc; color: #09090b; border-radius: 12px; width: 44px; height: 44px; border: 1px solid #e2e8f0;">
+            <i class="fa-solid fa-calendar-week fs-2"></i>
+          </span>
           <div>
             <div class="text-muted small fw-medium">За 7 дней</div>
             <div class="h2 mb-0 fw-bold text-dark">{{ tasks_7d }}</div>
@@ -78,13 +75,11 @@
 
     <!-- Total Sent -->
     <div class="col-sm-6 col-lg-2">
-      <div class="card p-3 border-0">
+      <div class="card p-3 border-0 shadow-sm" style="border-radius: 18px;">
         <div class="d-flex align-items-center">
-          <div class="story-ring-container story-ring-active me-3" style="width: 42px; height: 42px; padding: 2px;">
-            <div class="story-avatar-inner" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-paper-plane text-warning"></i>
-            </div>
-          </div>
+          <span class="avatar me-3" style="background: #f0fdfa; color: #0d9488; border-radius: 12px; width: 44px; height: 44px;">
+            <i class="fa-solid fa-paper-plane fs-2"></i>
+          </span>
           <div>
             <div class="text-muted small fw-medium">Всего сообщений</div>
             <div class="h2 mb-0 fw-bold text-dark">{{ total_tasks }}</div>
@@ -95,13 +90,11 @@
 
     <!-- Delivery Rate -->
     <div class="col-sm-6 col-lg-2">
-      <div class="card p-3 border-0">
+      <div class="card p-3 border-0 shadow-sm" style="border-radius: 18px;">
         <div class="d-flex align-items-center">
-          <div class="story-ring-container story-ring-active me-3" style="width: 42px; height: 42px; padding: 2px;">
-            <div class="story-avatar-inner" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-circle-check text-success"></i>
-            </div>
-          </div>
+          <span class="avatar me-3" style="background: #f0fdfa; color: #0f766e; border-radius: 12px; width: 44px; height: 44px; border: 1px solid #99f6e4;">
+            <i class="fa-solid fa-circle-check fs-2" style="color: #0d9488;"></i>
+          </span>
           <div>
             <div class="text-muted small fw-medium">Доставляемость</div>
             <div class="h2 mb-0 fw-bold text-dark">{{ delivery_rate }}%</div>
@@ -112,15 +105,13 @@
 
     <!-- Devices Online -->
     <div class="col-sm-6 col-lg-2">
-      <div class="card p-3 border-0">
+      <div class="card p-3 border-0 shadow-sm" style="border-radius: 18px;">
         <div class="d-flex align-items-center">
-          <div class="story-ring-container story-ring-active me-3" style="width: 42px; height: 42px; padding: 2px;">
-            <div class="story-avatar-inner" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-mobile-screen text-info"></i>
-            </div>
-          </div>
+          <span class="avatar me-3" style="background: #09090b; color: #2dd4bf; border-radius: 12px; width: 44px; height: 44px;">
+            <i class="fa-solid fa-mobile-screen fs-2"></i>
+          </span>
           <div>
-            <div class="text-muted small fw-medium">Шлюзов в сети</div>
+            <div class="text-muted small fw-medium">Телефонов в сети</div>
             <div class="h2 mb-0 fw-bold text-dark">{{ online_devices }} / {{ total_devices }}</div>
           </div>
         </div>
@@ -129,13 +120,11 @@
 
     <!-- Blocked Numbers -->
     <div class="col-sm-6 col-lg-2">
-      <div class="card p-3 border-0">
+      <div class="card p-3 border-0 shadow-sm" style="border-radius: 18px;">
         <div class="d-flex align-items-center">
-          <div class="story-ring-container story-ring-offline me-3" style="width: 42px; height: 42px; padding: 2px;">
-            <div class="story-avatar-inner" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-ban text-danger"></i>
-            </div>
-          </div>
+          <span class="avatar me-3" style="background: #fef2f2; color: #b91c1c; border-radius: 12px; width: 44px; height: 44px;">
+            <i class="fa-solid fa-ban fs-2"></i>
+          </span>
           <div>
             <div class="text-muted small fw-medium">В черном списке</div>
             <div class="h2 mb-0 fw-bold text-danger">{{ blacklisted_count }}</div>
@@ -145,22 +134,20 @@
     </div>
   </div>
 
-  <!-- INSTAGRAM STORY-STYLE DEVICE POOL STATUS SECTION -->
-  <div class="card border-0 mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center py-3">
+  <!-- MULTI-DEVICE POOL SECTION (White, Teal, Black Rounded Minimalist Cards) -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+    <div class="card-header d-flex justify-content-between align-items-center py-3" style="background: #ffffff; border-bottom: 1px solid #f1f5f9; border-top-left-radius: 20px; border-top-right-radius: 20px;">
       <div class="d-flex align-items-center">
-        <div class="story-ring-container story-ring-active me-3" style="width: 38px; height: 38px; padding: 2px;">
-          <div class="story-avatar-inner" style="font-size: 0.9rem;">
-            <i class="fa-solid fa-network-wired text-dark"></i>
-          </div>
-        </div>
+        <span class="avatar me-3" style="background: #f0fdfa; color: #0d9488; border-radius: 12px; width: 40px; height: 40px;">
+          <i class="fa-solid fa-network-wired"></i>
+        </span>
         <div>
-          <h3 class="card-title mb-0 fw-bold">Пул GSM-шлюзов и ротация нагрузки</h3>
+          <h3 class="card-title mb-0 fw-bold" style="color: #09090b;">Пул GSM-шлюзов и ротация нагрузки</h3>
           <div class="text-muted small">Входящие SMS автоматически чередуются между всеми активными аппаратами (Round-Robin)</div>
         </div>
       </div>
       <div>
-        <a href="/admin/device/create" class="btn btn-sm btn-primary">
+        <a href="/admin/device/create" class="btn btn-sm" style="background: #0d9488; color: #ffffff; border-radius: 9999px;">
           <i class="fa-solid fa-plus me-1"></i> Добавить телефон
         </a>
       </div>
@@ -169,28 +156,25 @@
       <div class="row g-3">
         {% for dev in device_pool %}
         <div class="col-md-6 col-lg-4 col-xl-3">
-          <div class="card h-100 p-3 border {% if dev.is_online %}bg-white{% else %}bg-light opacity-75{% endif %}" style="border-radius: 14px;">
-            <div class="d-flex align-items-center mb-3">
-              <!-- Instagram Story Ring Avatar -->
-              <div class="story-ring-container {% if dev.is_online %}story-ring-active{% else %}story-ring-offline{% endif %} me-3">
-                <div class="story-avatar-inner">
-                  <i class="fa-solid fa-mobile-screen"></i>
+          <div class="card h-100 p-3" style="border-radius: 16px; border: 1px solid {% if dev.is_online %}#ccfbf1{% else %}#f1f5f9{% endif %}; background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);">
+            
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="d-flex align-items-center">
+                <span class="avatar me-2" style="background: {% if dev.is_online %}#f0fdfa{% else %}#f8fafc{% endif %}; color: {% if dev.is_online %}#0d9488{% else %}#94a3b8{% endif %}; border-radius: 12px; width: 40px; height: 40px; border: 1px solid {% if dev.is_online %}#99f6e4{% else %}#e2e8f0{% endif %};">
+                  <i class="fa-solid fa-mobile-screen fs-3"></i>
+                </span>
+                <div>
+                  <h4 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 140px; font-size: 0.95rem;">{{ dev.name }}</h4>
+                  <div class="text-muted small font-monospace" style="font-size: 0.72rem;">ID #{{ dev.id }}</div>
                 </div>
-              </div>
-              <div class="flex-grow-1 overflow-hidden">
-                <div class="d-flex align-items-center">
-                  <span class="fw-bold text-dark text-truncate" style="font-size: 0.95rem;">{{ dev.name }}</span>
-                  <i class="fa-solid fa-circle-check ig-verified-badge" title="Верифицированный шлюз"></i>
-                </div>
-                <div class="text-muted small font-monospace" style="font-size: 0.72rem;">ID #{{ dev.id }}</div>
               </div>
               <div>
                 {% if dev.is_online %}
-                  <span class="badge bg-success-lt py-1 px-2 d-inline-flex align-items-center" style="font-size: 0.75rem;">
-                    <i class="fa-solid fa-circle text-success me-1" style="font-size: 0.45rem;"></i> В сети
+                  <span class="badge py-1 px-3 d-inline-flex align-items-center" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px; font-size: 0.75rem;">
+                    <span class="status-dot status-dot-animated me-1" style="background: #0d9488;"></span> В сети
                   </span>
                 {% else %}
-                  <span class="badge bg-secondary-lt py-1 px-2 d-inline-flex align-items-center" style="font-size: 0.75rem;">
+                  <span class="badge py-1 px-3 d-inline-flex align-items-center" style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; border-radius: 9999px; font-size: 0.75rem;">
                     <i class="fa-solid fa-circle text-muted me-1" style="font-size: 0.45rem;"></i> Офлайн
                   </span>
                 {% endif %}
@@ -200,37 +184,37 @@
             <!-- Rotation Priority Indicator -->
             <div class="mb-3">
               {% if dev.is_next and dev.is_online %}
-                <span class="badge badge-ig-gradient w-100 py-1 text-center d-block">
+                <span class="badge w-100 py-1 text-center d-block fw-semibold" style="background: #0d9488; color: #ffffff; border-radius: 9999px; box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);">
                   <i class="fa-solid fa-arrows-rotate me-1"></i> Следующий в очереди на отправку
                 </span>
               {% elif dev.is_online %}
-                <span class="badge bg-blue-lt w-100 py-1 text-center d-block">
-                  <i class="fa-solid fa-circle-check me-1"></i> Готов к отправке в пуле
+                <span class="badge w-100 py-1 text-center d-block fw-semibold" style="background: #f0fdfa; color: #0f766e; border: 1px solid #ccfbf1; border-radius: 9999px;">
+                  <i class="fa-solid fa-circle-check me-1" style="color: #0d9488;"></i> Готов к отправке в пуле
                 </span>
               {% else %}
-                <span class="badge bg-secondary-lt w-100 py-1 text-center d-block text-muted">
+                <span class="badge w-100 py-1 text-center d-block text-muted" style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; border-radius: 9999px;">
                   <i class="fa-solid fa-circle-pause me-1"></i> Ожидает подключения
                 </span>
               {% endif %}
             </div>
 
             <!-- Battery & Power status -->
-            <div class="mb-3 p-2 rounded-3 bg-light d-flex flex-column gap-2" style="border: 1px solid #f0f0f0;">
+            <div class="mb-3 p-2 rounded-3 d-flex flex-column gap-2" style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px;">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                   {% if dev.battery_level is not none %}
                     {% if dev.battery_level >= 50 %}
-                      <i class="fa-solid fa-battery-full text-success fs-3 me-2"></i>
+                      <i class="fa-solid fa-battery-full fs-3 me-2" style="color: #0d9488;"></i>
                     {% elif dev.battery_level >= 20 %}
-                      <i class="fa-solid fa-battery-half text-warning fs-3 me-2"></i>
+                      <i class="fa-solid fa-battery-half fs-3 me-2 text-warning"></i>
                     {% else %}
-                      <i class="fa-solid fa-battery-quarter text-danger fs-3 me-2"></i>
+                      <i class="fa-solid fa-battery-quarter fs-3 me-2 text-danger"></i>
                     {% endif %}
                     <div>
-                      <div class="fw-bold fs-4 mb-0 d-inline-flex align-items-center">
+                      <div class="fw-bold fs-4 mb-0 d-inline-flex align-items-center text-dark">
                         {{ dev.battery_level }}%
                         {% if dev.is_charging %}
-                          <i class="fa-solid fa-bolt text-warning ms-1" title="На зарядке"></i>
+                          <i class="fa-solid fa-bolt ms-1" style="color: #0d9488;" title="На зарядке"></i>
                         {% endif %}
                       </div>
                     </div>
@@ -247,28 +231,28 @@
 
               {% if dev.battery_level is not none %}
               <div class="progress" style="height: 4px; border-radius: 2px;">
-                <div class="progress-bar {% if dev.battery_level >= 50 %}bg-success{% elif dev.battery_level >= 20 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ dev.battery_level }}%;"></div>
+                <div class="progress-bar" style="width: {{ dev.battery_level }}%; background-color: {% if dev.battery_level >= 50 %}#0d9488{% elif dev.battery_level >= 20 %}#f59e0b{% else %}#ef4444{% endif %};"></div>
               </div>
               {% endif %}
             </div>
 
-            <!-- Instagram Profile Style Counters (Posts / Followers style) -->
+            <!-- Statistics Grid -->
             <div class="row g-2 text-center mb-3">
               <div class="col-4">
-                <div class="p-2 rounded-2 bg-white" style="border: 1px solid #f0f0f0;">
+                <div class="p-2 bg-white" style="border: 1px solid #f1f5f9; border-radius: 10px;">
                   <div class="h3 mb-0 fw-bold text-dark">{{ dev.sent_today }}</div>
                   <div class="text-muted fw-semibold" style="font-size: 0.65rem;">Сегодня</div>
                 </div>
               </div>
               <div class="col-4">
-                <div class="p-2 rounded-2 bg-white" style="border: 1px solid #f0f0f0;">
+                <div class="p-2 bg-white" style="border: 1px solid #f1f5f9; border-radius: 10px;">
                   <div class="h3 mb-0 fw-bold text-dark">{{ dev.sent_7d }}</div>
                   <div class="text-muted fw-semibold" style="font-size: 0.65rem;">7 дней</div>
                 </div>
               </div>
               <div class="col-4">
-                <div class="p-2 rounded-2 bg-white" style="border: 1px solid #f0f0f0;">
-                  <div class="h3 mb-0 fw-bold" style="color: #0095f6;">{{ dev.total_sent }}</div>
+                <div class="p-2 bg-white" style="border: 1px solid #f1f5f9; border-radius: 10px;">
+                  <div class="h3 mb-0 fw-bold" style="color: #0d9488;">{{ dev.total_sent }}</div>
                   <div class="text-muted fw-semibold" style="font-size: 0.65rem;">Всего</div>
                 </div>
               </div>
@@ -277,10 +261,10 @@
             <!-- Token snippet with copy button -->
             <div class="mt-auto pt-2 border-top">
               <div class="d-flex justify-content-between align-items-center">
-                <code class="small text-truncate me-2 font-monospace" style="max-width: 150px; font-size: 0.72rem; color: #737373;" title="{{ dev.token }}">
+                <code class="small text-truncate me-2 font-monospace" style="max-width: 150px; font-size: 0.72rem; color: #64748b;" title="{{ dev.token }}">
                   {{ dev.token }}
                 </code>
-                <button class="btn btn-sm btn-outline-primary px-2 py-1" onclick="navigator.clipboard.writeText('{{ dev.token }}');" title="Скопировать токен">
+                <button class="btn btn-sm px-2 py-1" style="background: #f0fdfa; color: #0d9488; border: 1px solid #ccfbf1; border-radius: 8px;" onclick="navigator.clipboard.writeText('{{ dev.token }}');" title="Скопировать токен">
                   <i class="fa-regular fa-copy"></i>
                 </button>
               </div>
@@ -296,13 +280,15 @@
   <div class="row row-cards">
     <!-- Abusers Section (Top suspicious numbers in 7 days) -->
     <div class="col-lg-6 mb-4">
-      <div class="card h-100 border-0">
-        <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px;">
+        <div class="card-header d-flex justify-content-between align-items-center py-3" style="background: #ffffff; border-bottom: 1px solid #f1f5f9; border-top-left-radius: 20px; border-top-right-radius: 20px;">
           <div class="d-flex align-items-center">
-            <i class="fa-solid fa-user-shield text-danger fs-3 me-2"></i>
-            <span class="h3 mb-0 fw-bold">Повторные запросы за 7 дней (Абузеры)</span>
+            <span class="avatar me-3" style="background: #fef2f2; color: #b91c1c; border-radius: 12px; width: 36px; height: 36px;">
+              <i class="fa-solid fa-user-shield"></i>
+            </span>
+            <span class="h3 mb-0 fw-bold text-dark">Повторные запросы за 7 дней (Абузеры)</span>
           </div>
-          <a href="/admin/abusers" class="small fw-semibold text-decoration-none" style="color: #0095f6;">
+          <a href="/admin/abusers" class="small fw-semibold text-decoration-none" style="color: #0d9488;">
             Вся аналитика &rarr;
           </a>
         </div>
@@ -324,29 +310,29 @@
                 <tr>
                   <td class="fw-bold text-dark font-monospace">{{ r.phone_number }}</td>
                   <td class="text-center">
-                    <span class="badge bg-primary-lt px-2 py-1 fs-4">{{ r.count_7d }}</span>
+                    <span class="badge px-3 py-1 fs-4 fw-bold" style="background: #f0fdfa; color: #0f766e; border-radius: 9999px;">{{ r.count_7d }}</span>
                   </td>
                   <td>
                     {% if r.count_7d >= 8 %}
-                      <span class="badge bg-danger text-white"><i class="fa-solid fa-shield-virus me-1"></i>Критический</span>
+                      <span class="badge px-3 py-1" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9999px;"><i class="fa-solid fa-shield-virus me-1"></i>Критический</span>
                     {% elif r.count_7d >= 4 %}
-                      <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Подозрительный</span>
+                      <span class="badge px-3 py-1" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; border-radius: 9999px;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Подозрительный</span>
                     {% else %}
-                      <span class="badge bg-info-lt"><i class="fa-solid fa-clock-rotate-left me-1"></i>Повторный</span>
+                      <span class="badge px-3 py-1" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 9999px;"><i class="fa-solid fa-clock-rotate-left me-1 text-muted"></i>Повторный</span>
                     {% endif %}
                   </td>
                   <td>
                     {% if is_blocked %}
-                      <span class="badge bg-danger-lt"><i class="fa-solid fa-ban me-1"></i>Заблокирован</span>
+                      <span class="badge px-3 py-1" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9999px;"><i class="fa-solid fa-ban me-1"></i>Заблокирован</span>
                     {% else %}
-                      <span class="badge bg-success-lt"><i class="fa-solid fa-check me-1"></i>Активен</span>
+                      <span class="badge px-3 py-1" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px;"><i class="fa-solid fa-check me-1" style="color: #0d9488;"></i>Активен</span>
                     {% endif %}
                   </td>
                   <td class="text-end">
                     {% if is_blocked %}
                       <form method="POST" action="/admin/abusers/unblock" class="d-inline">
                         <input type="hidden" name="phone_number" value="{{ r.phone_number }}">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius: 9999px;">
                           <i class="fa-solid fa-unlock me-1"></i> Разблок.
                         </button>
                       </form>
@@ -354,7 +340,7 @@
                       <form method="POST" action="/admin/abusers/block" class="d-inline">
                         <input type="hidden" name="phone_number" value="{{ r.phone_number }}">
                         <input type="hidden" name="reason" value="Частые запросы кодов за 7 дней ({{ r.count_7d }} раз)">
-                        <button type="submit" class="btn btn-sm btn-danger">
+                        <button type="submit" class="btn btn-sm btn-danger" style="border-radius: 9999px;">
                           <i class="fa-solid fa-ban me-1"></i> Блок
                         </button>
                       </form>
@@ -365,7 +351,7 @@
               {% else %}
                 <tr>
                   <td colspan="5" class="text-center text-muted py-4">
-                    <i class="fa-solid fa-shield-halved text-success fs-1 mb-2 d-block"></i>
+                    <i class="fa-solid fa-shield-halved fs-1 mb-2 d-block" style="color: #0d9488;"></i>
                     Подозрительных повторных запросов за 7 дней не обнаружено.
                   </td>
                 </tr>
@@ -378,13 +364,15 @@
 
     <!-- Recent SMS Activity (with sender device column!) -->
     <div class="col-lg-6 mb-4">
-      <div class="card h-100 border-0">
-        <div class="card-header d-flex justify-content-between align-items-center py-3">
+      <div class="card h-100 border-0 shadow-sm" style="border-radius: 20px;">
+        <div class="card-header d-flex justify-content-between align-items-center py-3" style="background: #ffffff; border-bottom: 1px solid #f1f5f9; border-top-left-radius: 20px; border-top-right-radius: 20px;">
           <div class="d-flex align-items-center">
-            <i class="fa-solid fa-clock-rotate-left fs-3 me-2" style="color: #0095f6;"></i>
-            <span class="h3 mb-0 fw-bold">Последние SMS в шлюзе</span>
+            <span class="avatar me-3" style="background: #f0fdfa; color: #0d9488; border-radius: 12px; width: 36px; height: 36px;">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+            <span class="h3 mb-0 fw-bold text-dark">Последние SMS в шлюзе</span>
           </div>
-          <a href="{{ url_for('admin:list', identity='sms-task') }}" class="small fw-semibold text-decoration-none" style="color: #0095f6;">
+          <a href="{{ url_for('admin:list', identity='sms-task') }}" class="small fw-semibold text-decoration-none" style="color: #0d9488;">
             Все сообщения &rarr;
           </a>
         </div>
@@ -408,8 +396,8 @@
                   </td>
                   <td>
                     {% if t.device %}
-                      <span class="badge bg-purple-lt px-2 py-1 d-inline-flex align-items-center">
-                        <i class="fa-solid fa-mobile-screen me-1 text-purple"></i> {{ t.device.name }}
+                      <span class="badge px-3 py-1 d-inline-flex align-items-center" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 9999px;">
+                        <i class="fa-solid fa-mobile-screen me-2" style="color: #0d9488;"></i> {{ t.device.name }}
                       </span>
                     {% else %}
                       <span class="text-muted small">—</span>
@@ -417,18 +405,18 @@
                   </td>
                   <td>
                     {% if t.status == 'DELIVERED' %}
-                      <span class="badge bg-success-lt px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>DELIVERED</span>
+                      <span class="badge px-3 py-1" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px;"><i class="fa-solid fa-circle-check me-1" style="color: #0d9488;"></i>DELIVERED</span>
                     {% elif t.status == 'SENT' %}
-                      <span class="badge bg-blue-lt px-2 py-1"><i class="fa-solid fa-paper-plane me-1"></i>SENT</span>
+                      <span class="badge px-3 py-1" style="background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 9999px;"><i class="fa-solid fa-paper-plane me-1 text-muted"></i>SENT</span>
                     {% elif t.status == 'EXPIRED' %}
-                      <span class="badge bg-warning-lt px-2 py-1"><i class="fa-solid fa-hourglass-end me-1"></i>EXPIRED</span>
+                      <span class="badge px-3 py-1" style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; border-radius: 9999px;"><i class="fa-solid fa-hourglass-end me-1"></i>EXPIRED</span>
                     {% elif t.status == 'FAILED' %}
-                      <span class="badge bg-danger-lt px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>FAILED</span>
+                      <span class="badge px-3 py-1" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9999px;"><i class="fa-solid fa-triangle-exclamation me-1"></i>FAILED</span>
                     {% else %}
-                      <span class="badge bg-secondary-lt px-2 py-1">{{ t.status }}</span>
+                      <span class="badge px-3 py-1" style="border-radius: 9999px;">{{ t.status }}</span>
                     {% endif %}
                   </td>
-                  <td class="text-muted small text-end">
+                  <td class="text-muted small text-end font-monospace">
                     {{ t.created_at_msk }}
                   </td>
                 </tr>

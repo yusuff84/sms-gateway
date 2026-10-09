@@ -24,12 +24,14 @@ class BaseAdminModelView(ModelView):
 def format_device_online_badge(model: Device, attribute: str) -> Markup:
     if model.is_online:
         return Markup(
-            '<span class="badge bg-success-lt py-1 px-2 d-inline-flex align-items-center">'
-            '<span class="status-dot status-dot-animated bg-success me-1"></span>В сети</span>'
+            '<span class="badge py-1 px-3 d-inline-flex align-items-center" '
+            'style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px;">'
+            '<span class="status-dot status-dot-animated me-2" style="background: #0d9488;"></span>В сети</span>'
         )
     return Markup(
-        '<span class="badge bg-secondary-lt py-1 px-2 d-inline-flex align-items-center">'
-        '<i class="fa-solid fa-circle text-muted me-1" style="font-size: 0.5rem;"></i>Офлайн</span>'
+        '<span class="badge py-1 px-3 d-inline-flex align-items-center" '
+        'style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; border-radius: 9999px;">'
+        '<i class="fa-solid fa-circle text-muted me-1" style="font-size: 0.45rem;"></i>Офлайн</span>'
     )
 
 
@@ -37,53 +39,72 @@ def format_device_battery_badge(model: Device, attribute: str) -> Markup:
     if model.battery_level is None:
         return Markup('<span class="text-muted">—</span>')
     level = model.battery_level
-    charging_icon = ' <i class="fa-solid fa-bolt text-warning ms-1" title="На зарядке"></i>' if model.is_charging else ''
+    charging_icon = ' <i class="fa-solid fa-bolt ms-1" style="color: #0d9488;" title="На зарядке"></i>' if model.is_charging else ''
 
-    if level >= 60:
-        badge_cls = "bg-success-lt"
-        icon = '<i class="fa-solid fa-battery-full text-success me-1"></i>'
-    elif level >= 25:
-        badge_cls = "bg-warning-lt"
-        icon = '<i class="fa-solid fa-battery-half text-warning me-1"></i>'
+    if level >= 50:
+        style = "background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;"
+        icon = '<i class="fa-solid fa-battery-full me-1" style="color: #0d9488;"></i>'
+    elif level >= 20:
+        style = "background: #fffbeb; color: #b45309; border: 1px solid #fde68a;"
+        icon = '<i class="fa-solid fa-battery-half me-1 text-warning"></i>'
     else:
-        badge_cls = "bg-danger-lt"
-        icon = '<i class="fa-solid fa-battery-quarter text-danger me-1"></i>'
+        style = "background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;"
+        icon = '<i class="fa-solid fa-battery-quarter me-1 text-danger"></i>'
 
-    return Markup(f'<span class="badge {badge_cls} py-1 px-2">{icon}{level}%{charging_icon}</span>')
+    return Markup(f'<span class="badge py-1 px-3" style="{style} border-radius: 9999px;">{icon}{level}%{charging_icon}</span>')
 
 
 def format_sms_status_badge(model: SmsTask, attribute: str) -> Markup:
     st = model.status
     if st == SmsStatus.DELIVERED:
-        return Markup('<span class="badge bg-success-lt px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>DELIVERED</span>')
+        return Markup(
+            '<span class="badge px-3 py-1" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px;">'
+            '<i class="fa-solid fa-circle-check me-1" style="color: #0d9488;"></i>DELIVERED</span>'
+        )
     elif st == SmsStatus.SENT:
-        return Markup('<span class="badge bg-blue-lt px-2 py-1"><i class="fa-solid fa-paper-plane me-1"></i>SENT</span>')
+        return Markup(
+            '<span class="badge px-3 py-1" style="background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 9999px;">'
+            '<i class="fa-solid fa-paper-plane me-1 text-muted"></i>SENT</span>'
+        )
     elif st == SmsStatus.SENDING or st == SmsStatus.QUEUED:
-        return Markup(f'<span class="badge bg-warning-lt px-2 py-1"><i class="fa-solid fa-clock me-1"></i>{st}</span>')
+        return Markup(
+            f'<span class="badge px-3 py-1" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; border-radius: 9999px;">'
+            f'<i class="fa-solid fa-clock me-1"></i>{st}</span>'
+        )
     elif st == SmsStatus.EXPIRED:
-        return Markup('<span class="badge bg-secondary-lt px-2 py-1"><i class="fa-solid fa-hourglass-end me-1"></i>EXPIRED</span>')
+        return Markup(
+            f'<span class="badge px-3 py-1" style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; border-radius: 9999px;">'
+            f'<i class="fa-solid fa-hourglass-end me-1"></i>EXPIRED</span>'
+        )
     elif st == SmsStatus.FAILED:
         err = f' title="{model.error_message}"' if model.error_message else ''
-        return Markup(f'<span class="badge bg-danger-lt px-2 py-1"{err}><i class="fa-solid fa-triangle-exclamation me-1"></i>FAILED</span>')
-    return Markup(f'<span class="badge bg-secondary-lt px-2 py-1">{st}</span>')
+        return Markup(
+            f'<span class="badge px-3 py-1" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9999px;"{err}>'
+            f'<i class="fa-solid fa-triangle-exclamation me-1"></i>FAILED</span>'
+        )
+    return Markup(f'<span class="badge px-3 py-1" style="border-radius: 9999px;">{st}</span>')
 
 
 def format_task_device_badge(model: SmsTask, attribute: str) -> Markup:
     if model.device:
         return Markup(
-            f'<span class="badge bg-purple-lt px-2 py-1 d-inline-flex align-items-center">'
-            f'<i class="fa-solid fa-mobile-screen me-1 text-purple"></i>{model.device.name}</span>'
+            '<span class="badge px-3 py-1 d-inline-flex align-items-center" '
+            'style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 9999px;">'
+            f'<i class="fa-solid fa-mobile-screen me-2" style="color: #0d9488;"></i>{model.device.name}</span>'
         )
     return Markup('<span class="text-muted">—</span>')
 
 
 def format_task_phone_number(model: SmsTask, attribute: str) -> Markup:
-    return Markup(f'<span class="fw-bold text-dark font-monospace">{model.phone_number}</span>')
+    return Markup(f'<span class="fw-bold font-monospace text-dark">{model.phone_number}</span>')
 
 
 def format_task_sim_slot(model: SmsTask, attribute: str) -> Markup:
     slot = model.sim_slot or 1
-    return Markup(f'<span class="badge bg-azure-lt px-2 py-1"><i class="fa-solid fa-sim-card me-1"></i>SIM {slot}</span>')
+    return Markup(
+        '<span class="badge px-3 py-1" style="background: #f0fdfa; color: #0f766e; border: 1px solid #ccfbf1; border-radius: 9999px;">'
+        f'<i class="fa-solid fa-sim-card me-1" style="color: #0d9488;"></i>SIM {slot}</span>'
+    )
 
 
 class ApiKeyAdmin(BaseAdminModelView, model=ApiKey):
@@ -122,7 +143,9 @@ class DeviceAdmin(BaseAdminModelView, model=Device):
     column_formatters = {
         Device.is_online: format_device_online_badge,
         Device.battery_level: format_device_battery_badge,
-        Device.total_sent_count: lambda m, a: Markup(f'<span class="badge bg-primary-lt fw-bold fs-4">{m.total_sent_count}</span>'),
+        Device.total_sent_count: lambda m, a: Markup(
+            f'<span class="badge px-3 py-1 fw-bold fs-4" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px;">{m.total_sent_count}</span>'
+        ),
     }
     column_searchable_list = [Device.name, Device.token]
     column_sortable_list = [Device.id, Device.is_online, Device.total_sent_count, Device.last_ping_at]
@@ -162,7 +185,13 @@ class BlacklistedPhoneAdmin(BaseAdminModelView, model=BlacklistedPhone):
         BlacklistedPhone.updated_at,
     ]
     column_formatters = {
-        BlacklistedPhone.is_active: lambda m, a: Markup('<span class="badge bg-danger-lt"><i class="fa-solid fa-shield-halved me-1"></i>Заблокирован</span>') if m.is_active else Markup('<span class="badge bg-success-lt"><i class="fa-solid fa-check me-1"></i>Разблокирован</span>')
+        BlacklistedPhone.is_active: lambda m, a: Markup(
+            '<span class="badge px-3 py-1" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9999px;">'
+            '<i class="fa-solid fa-ban me-1"></i>Заблокирован</span>'
+        ) if m.is_active else Markup(
+            '<span class="badge px-3 py-1" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 9999px;">'
+            '<i class="fa-solid fa-check me-1"></i>Разблокирован</span>'
+        )
     }
     column_searchable_list = [BlacklistedPhone.phone_number, BlacklistedPhone.reason]
     column_sortable_list = [BlacklistedPhone.id, BlacklistedPhone.created_at, BlacklistedPhone.is_active]
