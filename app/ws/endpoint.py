@@ -64,6 +64,12 @@ async def device_websocket_endpoint(
                     res = await session.execute(stmt)
                     dev = res.scalar_one_or_none()
                     if dev:
+                        if not dev.is_active:
+                            logger.info(f"Device {device_id} is marked inactive. Closing socket.")
+                            await websocket.close(code=1000, reason="Device inactive")
+                            await manager.disconnect(device_id, websocket=websocket)
+                            return
+
                         if battery is not None:
                             dev.battery_level = int(battery)
                         dev.is_charging = bool(charging)
@@ -92,6 +98,19 @@ async def device_websocket_endpoint(
                                 task.delivered_at = now
                             elif task_status == SmsStatus.FAILED:
                                 task.error_message = error
+                                # Automatic Failover: If a device failed to send (e.g. carrier error or balance), retry on another active device!
+                                if task.retries < 2 and not task.is_expired:
+                                    task.retries += 1
+                                    task.status = SmsStatus.QUEUED
+                                    await session.commit()
+                                    logger.warning(
+                                        f"Task {task_id} failed on device {device_id} ({error}). "
+                                        f"Initiating automatic failover (attempt {task.retries}) to another device in pool..."
+                                    )
+                                    asyncio.create_task(
+                                        manager.dispatch_task_to_available_device(task, exclude_ids=[device_id])
+                                    )
+                                    continue
 
                             await session.commit()
                             logger.info(f"Task {task_id} updated to {task_status}")

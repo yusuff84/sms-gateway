@@ -74,7 +74,7 @@ class ConnectionManager:
             return device_id in self.active_connections
         return len(self.active_connections) > 0
 
-    def get_next_online_device_id(self) -> Optional[int]:
+    def get_next_online_device_id(self, exclude_ids: Optional[List[int]] = None) -> Optional[int]:
         """
         Selects the next online device using smart multi-device load balancing.
         Prioritizes the device that has been idle the longest (oldest last_dispatch_time).
@@ -84,6 +84,8 @@ class ConnectionManager:
         SMS 3 -> Phone A ...
         """
         online_device_ids = list(self.active_connections.keys())
+        if exclude_ids:
+            online_device_ids = [d for d in online_device_ids if d not in exclude_ids]
         if not online_device_ids:
             return None
         if len(online_device_ids) == 1:
@@ -102,6 +104,29 @@ class ConnectionManager:
 
     # Backwards compatibility alias
     get_first_online_device_id = get_next_online_device_id
+
+    async def get_next_active_device_id(self, exclude_ids: Optional[List[int]] = None) -> Optional[int]:
+        """Select next online device that is also active (is_active == True in DB)."""
+        candidate_ids = list(self.active_connections.keys())
+        if exclude_ids:
+            candidate_ids = [d for d in candidate_ids if d not in exclude_ids]
+        if not candidate_ids:
+            return None
+
+        async with AsyncSessionLocal() as session:
+            stmt = select(Device.id).where(Device.id.in_(candidate_ids), Device.is_active == True)
+            res = await session.execute(stmt)
+            active_ids = set(res.scalars().all())
+
+        valid_ids = [d for d in candidate_ids if d in active_ids]
+        if not valid_ids:
+            return None
+
+        sorted_devices = sorted(
+            valid_ids,
+            key=lambda d_id: self.last_dispatch_time.get(d_id, 0)
+        )
+        return sorted_devices[0]
 
     async def send_task(self, device_id: int, task: SmsTask) -> bool:
         # Check if task is already expired
@@ -130,27 +155,30 @@ class ConnectionManager:
             dev_stmt = select(Device).where(Device.id == device_id)
             dev_res = await session.execute(dev_stmt)
             dev = dev_res.scalar_one_or_none()
-            if dev:
-                if assigned_sim == 0:
-                    if dev.sim_count > 1:
-                        next_slot = 2 if dev.last_sim_slot == 1 else 1
-                        assigned_sim = next_slot
-                        dev.last_sim_slot = next_slot
-                    else:
-                        assigned_sim = 1
-                        dev.last_sim_slot = 1
+            if not dev or not dev.is_active:
+                logger.warning(f"Device {device_id} is inactive or not found. Skipping send.")
+                return False
 
-                dev.total_sent_count += 1
-                dev.hourly_sent_count += 1
+            if assigned_sim == 0:
+                if dev.sim_count > 1:
+                    next_slot = 2 if dev.last_sim_slot == 1 else 1
+                    assigned_sim = next_slot
+                    dev.last_sim_slot = next_slot
+                else:
+                    assigned_sim = 1
+                    dev.last_sim_slot = 1
 
-                # Update task's actual sim slot
-                task_stmt = select(SmsTask).where(SmsTask.id == task.id)
-                task_res = await session.execute(task_stmt)
-                t = task_res.scalar_one_or_none()
-                if t:
-                    t.sim_slot = assigned_sim
+            dev.total_sent_count += 1
+            dev.hourly_sent_count += 1
 
-                await session.commit()
+            # Update task's actual sim slot
+            task_stmt = select(SmsTask).where(SmsTask.id == task.id)
+            task_res = await session.execute(task_stmt)
+            t = task_res.scalar_one_or_none()
+            if t:
+                t.sim_slot = assigned_sim
+
+            await session.commit()
 
         # Natural Human Pacing: ensure smooth dispatch interval (2.5 - 4.5s) to prevent carrier burst flags
         now = time.time()
@@ -176,8 +204,8 @@ class ConnectionManager:
             await self.disconnect(device_id)
             return False
 
-    async def dispatch_task_to_available_device(self, task: SmsTask) -> bool:
-        device_id = self.get_first_online_device_id()
+    async def dispatch_task_to_available_device(self, task: SmsTask, exclude_ids: Optional[List[int]] = None) -> bool:
+        device_id = await self.get_next_active_device_id(exclude_ids=exclude_ids)
         if device_id is not None:
             sent = await self.send_task(device_id, task)
             if sent:
